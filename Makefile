@@ -1,4 +1,6 @@
 
+default: manual-build build
+
 manual-build: web/css/index.css web/index.html
 
 web/css/index.css: styl/index.styl

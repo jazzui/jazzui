@@ -21,9 +21,15 @@
     flex: 1
     display: flex
     flex-direction: column
+    position: relative
 
     .CodeMirror
-      flex: 1
+      top: 0
+      left: 0
+      right: 0
+      bottom: 0
+      height: auto
+      position: absolute
 
   > .closed,
   > div > .closed
