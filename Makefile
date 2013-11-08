@@ -10,7 +10,7 @@ web/index.html: jade/index.jade
 	@jade jade/index.jade -o web
 
 build: components client/index.js client/tpl/xon.txt.js client/tpl/jade.txt.js client/tpl/stylus.txt.js
-	@component build --dev
+	@component build --dev -n index -o web/js
 
 client/tpl/xon.txt.js: client/tpl/xon.txt
 	@component convert $<
