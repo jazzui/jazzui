@@ -3,16 +3,14 @@
 
   rapid ui prototyping
 
-## Installation
+## Running
 
-  Install with [component(1)](http://component.io):
-
-    $ component install jazzui/jazzui
-
-## API
-
-
+```bash
+$ make
+$ make serve
+```
 
 ## License
 
   MIT
+

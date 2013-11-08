@@ -21,11 +21,16 @@ client/tpl/jade.txt.js: client/tpl/jade.txt
 client/tpl/stylus.txt.js: client/tpl/stylus.txt
 	@component convert $<
 
+serve:
+	@cd web; python -m SimpleHTTPServer
 
 components: component.json
 	@component install --dev
 
 clean:
 	rm -fr build components template.js
+
+lint:
+	@jshint --verbose *.js *.json client
 
 .PHONY: clean

@@ -1,14 +1,11 @@
 
 var xon = require('xon')
 
+  , Manager = require('./manager')
+
   , jadeTpl = require('./tpl/jade.txt')
   , stylusTpl = require('./tpl/stylus.txt')
   , xonTpl = require('./tpl/xon.txt')
-
-function compileXon(txt) {
-  var data = new Function('x', txt)(xon)
-  return xon(data)
-}
 
 function debounce(fn, num) {
   num = num || 300
@@ -30,91 +27,42 @@ module.exports = function (document, window) {
     , jade = window.jade
     , els = {}
 
-  ;['jade-mirror', 'stylus-mirror', 'xon-mirror', 'output', 'injected-css'].map(function (id) {
+  ;['jade-mirror',
+    'stylus-mirror',
+    'xon-mirror'].map(function (id) {
     els[id] = document.getElementById(id)
   })
+  
+  var manager = new Manager(document, null)
 
-  function updateHtml(txt) {
-    var html, parent = els.output.parentNode
-    try {
-      html = jade.compile(txt)()
-    } catch (e) {
-      return
-    }
-    parent.innerHTML = '<div id="output">' + html + '</div>'
-    angular.bootstrap((els.output = parent.firstChild), ['MyApp'])
+  var mirrors = {
+    jm: makeMirror(els['jade-mirror'], jadeTpl, 'jade', manager.html.bind(manager)),
+    sm: makeMirror(els['styl-mirror'], stylusTpl, 'jade', manager.styl.bind(manager)),
+    xm: makeMirror(els['xon-mirror'], xonTpl, 'javascript', manager.xon.bind(manager)),
   }
-  function updateStyle(txt) {
-    txt = '#output\n  ' + txt.replace(/\n/g,'\n  ')
-    stylus(txt).render(function (err, css) {
-      if (css) els['injected-css'].innerHTML = css
+
+  function makeMirror(el, txt, mode, change) {
+    var m = new CodeMirror(el, {
+      value: txt,
+      mode: mode,
+      theme: 'twilight',
+      extraKeys: {
+        Tab: function(cm) {
+          var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+          cm.replaceSelection(spaces, "end", "+input");
+        }
+      }
     })
+    m.on('change', debounce(function (instance, change) {
+      change(instance.doc.getValue())
+    }))
+    return m
   }
-
-  var html = debounce(updateHtml)
-    , style = debounce(updateStyle)
-    , dexon = debounce(updateXon)
-  var jm = new CodeMirror(els['jade-mirror'], {
-    value: jadeTpl,
-    mode: 'jade',
-    theme: 'twilight',
-    extraKeys: {
-      Tab: function(cm) {
-        var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
-        cm.replaceSelection(spaces, "end", "+input");
-      }
-    }
-  })
-  jm.on('change', function (instance, change) {
-    html(instance.doc.getValue())
-  })
-  var sm = new CodeMirror(els['stylus-mirror'], {
-    value: stylusTpl,
-    mode: 'jade',
-    theme: 'twilight',
-    extraKeys: {
-      Tab: function(cm) {
-        var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
-        cm.replaceSelection(spaces, "end", "+input");
-      }
-    }
-  })
-  sm.on('change', function (instance, change) {
-    style(instance.doc.getValue())
-  })
-  var xm = new CodeMirror(els['xon-mirror'], {
-    value: xonTpl,
-    mode: 'javascript',
-    theme: 'twilight',
-    extraKeys: {
-      Tab: function(cm) {
-        var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
-        cm.replaceSelection(spaces, "end", "+input");
-      }
-    }
-  })
-  xm.on('change', function (instance, change) {
-    dexon(instance.doc.getValue())
-  })
-
-  function updateXon(txt) {
-    if (!dataFetcher) return
-    try {
-      cxon = compileXon(txt)
-    } catch (e) {
-      return
-    }
-    dataFetcher(cxon)
-  }
-
-  var cxon = compileXon(xonTpl)
-    , dataFetcher
 
   angular.module('MyApp', [])
     .factory('getData', function () {
       return function (cb) {
-        cb(cxon, true)
-        dataFetcher = cb
+        manager.xon(xonTpl, cb)
       }
     })
     .controller('MainController', ['$scope', 'getData', function ($scope, getData) {
@@ -127,6 +75,4 @@ module.exports = function (document, window) {
       })
     }])
 
-  updateHtml(jadeTpl)
-  updateStyle(stylusTpl)
 }

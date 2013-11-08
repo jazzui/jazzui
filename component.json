@@ -13,6 +13,7 @@
   "main": "client/index.js",
   "scripts": [
     "client/index.js",
+    "client/manager.js",
     "client/tpl/stylus.txt.js",
     "client/tpl/jade.txt.js",
     "client/tpl/xon.txt.js"
