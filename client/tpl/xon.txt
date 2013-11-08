@@ -1,0 +1,9 @@
+
+return {
+  people: x.some(3, 10, {
+    name: x.fullName(),
+    age: x.randInt(21, 45),
+    status: x.choice(['new', 'old', 'middling'])
+  })
+}
+

@@ -1,0 +1,8 @@
+components
+build
+client/tpl/*.txt.js
+*.swp
+node_modules
+web/index.html
+web/js/index.js
+web/css/index.css

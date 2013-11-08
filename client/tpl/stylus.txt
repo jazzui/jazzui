@@ -1,0 +1,11 @@
+zoom: 80%
+
+.starter-template
+  padding: 40px 15px
+  text-align: center
+
+  ul.people
+    li
+      list-style: none
+
+

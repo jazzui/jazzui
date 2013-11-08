@@ -1,0 +1,27 @@
+div#main(ng-controller="MainController")
+  .navbar.navbar-inverse(role='navigation')
+    .container-fluid
+      .navbar-header
+        button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+          span.sr-only Toggle navigation
+          span.icon-bar
+          span.icon-bar
+          span.icon-bar
+        a.navbar-brand(href='#') Project name
+      .collapse.navbar-collapse
+        ul.nav.navbar-nav
+          li.active
+            a(href='#') Home
+          li
+            a(href='#about') About
+          li
+            a(href='#contact') Contact
+  .container-fluid
+    .starter-template
+      h1 Bootstrap starter template
+      p.lead
+        | Use this document as a way to quickly start any new project.
+        br
+        | All you get is this text and a mostly barebones HTML document.
+      ul.people
+        li(ng-repeat='person in people') {{ person.name }}

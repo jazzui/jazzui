@@ -1,0 +1,42 @@
+!!!
+html
+  head
+    title JazzUI
+
+    // codemirror includes
+    link(rel='stylesheet', href='/codemirror/lib/codemirror.css')
+    link(rel='stylesheet', href='/codemirror/theme/twilight.css')
+    script(src='/codemirror/lib/codemirror.js')
+    script(src='/codemirror/keymap/vim.js')
+    script(src='/codemirror/mode/javascript/javascript.js')
+    script(src='/codemirror/mode/jade/jade.js')
+    script(src='/codemirror/mode/less/less.js')
+
+    // bootstrap theme
+    link(rel='stylesheet', href='/bootstrap/css/bootstrap.css')
+
+    // non-component javascript libs
+    script(src='/js/angular.js')
+    script(src='/js/stylus.js')
+    script(src='/js/jade.js')
+
+    // my actual code
+    link(rel='stylesheet', href='/css/index.css')
+    script(src='/js/index.js')
+    script.
+      window.addEventListener('load', function () {
+        require('jazzui')(document, window)
+      })
+    style#injected-css
+  body
+    .main
+      .left-column
+        .jade
+          #jade-mirror.mirror
+        .xon
+          #xon-mirror.mirror
+      .middle
+        .output
+          #output
+        .stylus
+          #stylus-mirror.mirror

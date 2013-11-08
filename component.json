@@ -1,0 +1,21 @@
+{
+  "name": "jazzui",
+  "repo": "jazzui/jazzui",
+  "description": "rapid ui prototyping",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "visionmedia/jade": "*",
+    "jaredly/xon": "*"
+  },
+  "development": {},
+  "license": "MIT",
+  "main": "client/index.js",
+  "scripts": [
+    "client/index.js",
+    "client/tpl/stylus.txt.js",
+    "client/tpl/jade.txt.js",
+    "client/tpl/xon.txt.js"
+  ],
+  "remotes": []
+}
