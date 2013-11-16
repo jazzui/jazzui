@@ -35,13 +35,8 @@ module.exports = function (document, window) {
   
   var manager = new Manager(document, null)
 
-  var mirrors = {
-    jm: makeMirror(els['jade-mirror'], jadeTpl, 'jade', manager.html.bind(manager)),
-    sm: makeMirror(els['styl-mirror'], stylusTpl, 'jade', manager.styl.bind(manager)),
-    xm: makeMirror(els['xon-mirror'], xonTpl, 'javascript', manager.xon.bind(manager)),
-  }
-
-  function makeMirror(el, txt, mode, change) {
+  function makeMirror(name, el, txt, mode, onChange) {
+    txt = window.localStorage[name] || txt
     var m = new CodeMirror(el, {
       value: txt,
       mode: mode,
@@ -54,15 +49,17 @@ module.exports = function (document, window) {
       }
     })
     m.on('change', debounce(function (instance, change) {
-      change(instance.doc.getValue())
+      window.localStorage[name] = instance.doc.getValue()
+      onChange(instance.doc.getValue())
     }))
+    onChange(txt)
     return m
   }
 
   angular.module('MyApp', [])
     .factory('getData', function () {
       return function (cb) {
-        manager.xon(xonTpl, cb)
+        manager.xon(null, cb)
       }
     })
     .controller('MainController', ['$scope', 'getData', function ($scope, getData) {
@@ -74,5 +71,11 @@ module.exports = function (document, window) {
         if (!cached) $scope.$digest()
       })
     }])
+
+  var mirrors = {
+    jm: makeMirror('jade', els['jade-mirror'], jadeTpl, 'jade', manager.html.bind(manager)),
+    sm: makeMirror('stylus', els['stylus-mirror'], stylusTpl, 'jade', manager.styl.bind(manager)),
+    xm: makeMirror('xon', els['xon-mirror'], xonTpl, 'javascript', manager.xon.bind(manager)),
+  }
 
 }

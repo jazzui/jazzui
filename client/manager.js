@@ -3,9 +3,7 @@
 
 var xon = require('xon')
 
-  , jadeTpl = require('./tpl/jade.txt')
-  , stylusTpl = require('./tpl/stylus.txt')
-  , xonTpl = require('./tpl/xon.txt')
+module.exports = Manager;
 
 function compileXon(txt) {
   /* jshint -W054: false */
@@ -55,6 +53,7 @@ Manager.prototype = {
   },
   xon: function (txt, cb) {
     if (arguments.length === 0) return this.data.xon
+    if (!txt && cb) txt = this.data.xon
     if (cb) this.fetcher = cb
     var data
     try {
@@ -63,6 +62,8 @@ Manager.prototype = {
       return
     }
     this.data.xon = txt
-    this.fetcher(data)
+    if (this.fetcher) {
+      this.fetcher(data, !!cb)
+    }
   }
 }
