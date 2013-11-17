@@ -1,0 +1,18 @@
+!!!
+html
+  head
+    // bootstrap theme
+    link(rel='stylesheet', href='bootstrap/css/bootstrap.css')
+
+    // non-component javascript libs
+    script(src='js/angular.js')
+
+    // my actual code
+    link(rel='stylesheet', href='css/index.css')
+    script(src='js/index.js')
+    script.
+      window.addEventListener('load', function () {
+        require('prototype')(document)
+      })
+  body
+    /** INJECT **/

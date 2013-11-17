@@ -24,4 +24,6 @@ div#main(ng-controller="MainController")
         br
         | All you get is this text and a mostly barebones HTML document.
       ul.people
-        li(ng-repeat='person in people') {{ person.name }}
+        li(ng-repeat='person in people')
+          img(ng-src="{{person.picture}}")
+          span.name {{ person.name }}

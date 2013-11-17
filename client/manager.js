@@ -26,6 +26,7 @@ function Manager(document, fetcher){
   this.els = els
   this.data = data
   this.fetcher = fetcher
+  this.lastXon = null
 }
 
 Manager.prototype = {
@@ -53,8 +54,11 @@ Manager.prototype = {
   },
   xon: function (txt, cb) {
     if (arguments.length === 0) return this.data.xon
-    if (!txt && cb) txt = this.data.xon
     if (cb) this.fetcher = cb
+    if (!txt && cb) {
+      if (this.lastXon) return cb(this.lastXon, true)
+      txt = this.data.xon
+    }
     var data
     try {
       data = compileXon(txt)
@@ -62,6 +66,7 @@ Manager.prototype = {
       return
     }
     this.data.xon = txt
+    this.lastXon = data
     if (this.fetcher) {
       this.fetcher(data, !!cb)
     }

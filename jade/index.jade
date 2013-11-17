@@ -14,11 +14,13 @@ html
 
     // bootstrap theme
     link(rel='stylesheet', href='bootstrap/css/bootstrap.css')
+    link(rel='stylesheet', href='js/index.css')
 
     // non-component javascript libs
     script(src='js/angular.js')
     script(src='js/stylus.js')
     script(src='js/jade.js')
+    script(src='js/jszip.js')
 
     // my actual code
     link(rel='stylesheet', href='css/index.css')
@@ -29,20 +31,65 @@ html
       })
     style#injected-css
   body
+    #interaction(ng-controller="MainController")
+      .open-back(ng-show='showOpenDialog', ng-click='closeOpenDialog()')
+      .open-dialog(ng-show='showOpenDialog')
+        button.btn.btn-default.close-btn.pull-right(ng-click='closeOpenDialog()') &times;
+        h4 Select a Document to Open
+        ul
+          li(ng-repeat="doc in docs", ng-click="openDoc(doc)")
+            .pull-right.delete-btn(ng-click="removeDoc(doc)") &times;
+            strong.name {{ doc.name }}
+            em.date {{ doc.modified.toLocaleString() }}
+            em.hash {{ doc.hash }}
+          li(ng-hide="docs.length") No documents saved on this browser
+      .dl-back(ng-show='showDlDialog', ng-click='closeDlDialog()')
+      .dl-dialog(ng-show='showDlDialog')
+        button.btn.btn-default.close-btn.pull-right(ng-click='closeDlDialog()') &times;
+        h4 Download your prototype
+        strong Dependencies
+        ul
+          li gnu make
+          li nodejs
+          li component(1)
+          li stylus
+          li jade
+        .instructions
+          pre
+            code.bash.
+              // this will download bootstrap & angular,
+              // compile your stylus & less files
+              // and bundle your js
+              $ make build
+              // use python's built in static file server
+              $ make serve
+        p
+          |Then open <a href="http://localhost:8000">localhost:8000</a>
+          != " and you're there!"
+        a#download-link.btn.btn-primary(download="prototype.zip") Download the Zip
+      .floater
+        a(href="https://github.com/jazzui/jazzui") Jazzui
+        | &nbsp;by&nbsp;
+        a.author-link(href="http://jaredforsyth.com") Jared Forsyth
+        input(ng-model="docTitle")
+        .btn(ng-click="download()", data-toggle='tooltip', title='Download your prototype')
+          i.glyphicon.glyphicon-cloud-download
+        .btn(ng-click="open()", data-toggle='tooltip', title='Open a past prototype')
+          i.glyphicon.glyphicon-folder-open
     .main
       .left-column
         .jade.section
-          .reload-btn.btn.btn-default.btn-xs
+          .reload-btn.btn.btn-default.btn-xs.active
             .glyphicon.glyphicon-refresh
           #jade-mirror.mirror
         .xon.section
-          .reload-btn.btn.btn-default.btn-xs
+          .reload-btn.btn.btn-default.btn-xs.active
             .glyphicon.glyphicon-refresh
           #xon-mirror.mirror
       .middle
         .output
           #output
         .stylus.section
-          .reload-btn.btn.btn-default.btn-xs
+          .reload-btn.btn.btn-default.btn-xs.active
             .glyphicon.glyphicon-refresh
           #stylus-mirror.mirror

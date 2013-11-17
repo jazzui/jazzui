@@ -3,6 +3,7 @@
   position: absolute
   top: 0
   right: 0
+  z-index: 1000
   
 .section
   position: relative
@@ -10,6 +11,112 @@
 #output
   position: relative
   overflow: auto
+
+#interaction
+  .dl-dialog,
+  .open-dialog
+    position: absolute
+    top: 50%
+    left: 50%
+    width: 500px
+    height: 500px
+    margin-left: -250px
+    margin-top: -250px
+    background-color: white
+    border: 2px solid black
+    border-radius: 10px
+    padding: 20px 30px
+    box-sizing: border-box
+    z-index: 1005
+
+    .close-btn
+      line-height: 10px
+      padding: 5px
+
+    ul
+      padding: 0
+      margin: 0
+
+      li
+        list-style: none
+        padding: 5px 10px
+
+  .open-dialog
+    ul
+      li
+        cursor: pointer
+
+        .name
+          margin-right: 20px
+        .date
+          margin-right: 20px
+
+        .delete-btn
+          color: #f00;
+          font-weight: bold;
+          line-height: 6px;
+          padding: 12px;
+          margin-top: -5px;
+          margin-right: -10px;
+
+          &:hover
+            background-color: #777
+
+        &:hover
+          background-color: #ccc
+
+  .dl-dialog
+    text-align: center
+
+    pre
+      text-align: left
+
+  .dl-back,
+  .open-back
+    position: fixed
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    z-index: 1004
+    background-color: #999
+    opacity: .5
+    cursor: pointer
+
+  .floater
+    position: fixed
+    bottom: 0
+    left: 50%
+    margin-left: -225px
+    width: 450px
+    text-align: center
+    z-index: 1000
+    background-color: #333
+    border-radius: 5px
+    color: #ddd
+
+    .btn
+      padding: 6px 6px
+
+    .author-link
+      margin-right: 15px
+
+    .glyphicon
+      color: white
+
+    input
+      border: 2px solid #222;
+      padding: 0 5px;
+      background-color: #555;
+      color: white;
+    
+    a
+      color: white
+      font-weight: bold
+
+      &:hover
+        text-decoration: none
+        color: #ddd
 
 .main
   display: flex

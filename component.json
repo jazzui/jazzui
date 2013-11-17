@@ -6,7 +6,9 @@
   "keywords": [],
   "dependencies": {
     "visionmedia/jade": "*",
-    "jaredly/xon": "*"
+    "jaredly/xon": "*",
+    "component/tip": "*",
+    "component/aurora-tip": "*"
   },
   "development": {},
   "license": "MIT",
@@ -16,7 +18,11 @@
     "client/manager.js",
     "client/tpl/stylus.txt.js",
     "client/tpl/jade.txt.js",
-    "client/tpl/xon.txt.js"
+    "client/tpl/xon.txt.js",
+    "client/tpl/makefile.txt.js",
+    "client/tpl/componentjson.txt.js",
+    "client/tpl/outjs.txt.js",
+    "client/tpl/outjade.txt.js"
   ],
   "remotes": []
 }
