@@ -75,6 +75,7 @@ module.exports = function (document, window) {
     , stylus = window.stylus
     , jade = window.jade
     , els = {}
+    , reTitle
     , hash
 
   if (!window.location.hash) {
@@ -97,6 +98,7 @@ module.exports = function (document, window) {
     } else {
       hash = window.location.hash.slice(1)
     }
+    if (reTitle) reTitle()
 
     mirrors.jm.setValue(window.localStorage['jui.' + hash + '.jade'] || jadeTpl)
     mirrors.sm.setValue(window.localStorage['jui.' + hash + '.stylus'] || stylusTpl)
@@ -179,9 +181,13 @@ module.exports = function (document, window) {
   var app = angular.module('JazzUI', [])
   app.controller('MainController', ['$scope', function ($scope) {
     $scope.docTitle = 'Untitled'
-    try {
-      $scope.docTitle = JSON.parse(window.localStorage['jui.' + hash]).name
-    } catch (e) {}
+    reTitle = function (norefresh) {
+      try {
+        $scope.docTitle = JSON.parse(window.localStorage['jui.' + hash]).name
+      } catch (e) {}
+      if (!norefresh) $scope.$digest()
+    }
+    reTitle(true)
     $scope.$watch('docTitle', function (value, prev) {
       var data = {
         modified: new Date()
@@ -237,6 +243,17 @@ module.exports = function (document, window) {
     $scope.closeOpenDialog = function () {
       $scope.showOpenDialog = false
     }
+
+    $scope.duplicate = function () {
+      var id = genId()
+        , pref = 'jui.' + id
+      window.localStorage[pref] = window.localStorage[hash]
+      window.localStorage[pref + '.jade'] = mirrors.jm.getValue()
+      window.localStorage[pref + '.stylus'] = mirrors.sm.getValue()
+      window.localStorage[pref + '.xon'] = mirrors.xm.getValue()
+      window.location.hash = id
+    }
+    
   }]).directive("toggle", function() {
     return {
       restrict: "A",
