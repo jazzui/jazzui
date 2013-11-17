@@ -1,6 +1,122 @@
+.reload-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+}
+.section {
+  position: relative;
+}
 #output {
   position: relative;
   overflow: auto;
+}
+#interaction .dl-dialog,
+#interaction .open-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  height: 500px;
+  margin-left: -250px;
+  margin-top: -250px;
+  background-color: #fff;
+  border: 2px solid #000;
+  border-radius: 10px;
+  padding: 20px 30px;
+  box-sizing: border-box;
+  z-index: 1005;
+}
+#interaction .dl-dialog .close-btn,
+#interaction .open-dialog .close-btn {
+  line-height: 10px;
+  padding: 5px;
+}
+#interaction .dl-dialog ul,
+#interaction .open-dialog ul {
+  padding: 0;
+  margin: 0;
+}
+#interaction .dl-dialog ul li,
+#interaction .open-dialog ul li {
+  list-style: none;
+  padding: 5px 10px;
+}
+#interaction .open-dialog ul li {
+  cursor: pointer;
+}
+#interaction .open-dialog ul li .name {
+  margin-right: 20px;
+}
+#interaction .open-dialog ul li .date {
+  margin-right: 20px;
+}
+#interaction .open-dialog ul li .delete-btn {
+  color: #f00;
+  font-weight: bold;
+  line-height: 6px;
+  padding: 12px;
+  margin-top: -5px;
+  margin-right: -10px;
+}
+#interaction .open-dialog ul li .delete-btn:hover {
+  background-color: #777;
+}
+#interaction .open-dialog ul li:hover {
+  background-color: #ccc;
+}
+#interaction .dl-dialog {
+  text-align: center;
+}
+#interaction .dl-dialog pre {
+  text-align: left;
+}
+#interaction .dl-back,
+#interaction .open-back {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1004;
+  background-color: #999;
+  opacity: 0.5;
+  cursor: pointer;
+}
+#interaction .floater {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  margin-left: -225px;
+  width: 450px;
+  text-align: center;
+  z-index: 1000;
+  background-color: #333;
+  border-radius: 5px;
+  color: #ddd;
+}
+#interaction .floater .btn {
+  padding: 6px 6px;
+}
+#interaction .floater .author-link {
+  margin-right: 15px;
+}
+#interaction .floater .glyphicon {
+  color: #fff;
+}
+#interaction .floater input {
+  border: 2px solid #222;
+  padding: 0 5px;
+  background-color: #555;
+  color: #fff;
+}
+#interaction .floater a {
+  color: #fff;
+  font-weight: bold;
+}
+#interaction .floater a:hover {
+  text-decoration: none;
+  color: #ddd;
 }
 .main {
   display: flex;
