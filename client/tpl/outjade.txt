@@ -15,4 +15,4 @@ html
         require('prototype')(document)
       })
   body
-    /** INJECT **/
+    include proto.jade

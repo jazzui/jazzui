@@ -214,11 +214,10 @@ module.exports = function (document, window) {
 
       main.file('component.json', tpls.componentjson)
       main.file('Makefile', tpls.makefile)
-
-      var outjade = tpls.outjade.replace('/** INJECT **/', mirrors.jm.getValue().replace(/\n/g, '\n    '))
-      jadef.file('index.jade', outjade)
-      var outstyl = 'body\n  ' + mirrors.sm.getValue().replace(/\n/g, '\n  ')
-      stylf.file('index.styl', outstyl)
+      jadef.file('index.jade', tpls.outjade)
+      jadef.file('proto.jade', mirrors.jm.getValue())
+      stylf.file('index.styl', 'body\n  @import "proto.styl"\n')
+      stylf.file('proto.styl', mirrors.sm.getValue())
       var outjs = tpls.outjs.replace('/** INJECT **/', mirrors.xm.getValue().replace(/\n/g, '\n        '))
       main.file('index.js', outjs)
 
