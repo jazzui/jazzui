@@ -11,6 +11,17 @@
 #output
   position: relative
   overflow: auto
+  background-color: white
+
+  &.fullScreen
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    z-index: 2000
+    zoom: 100% !important
+    
 
 #interaction
   .dl-dialog,
@@ -87,13 +98,19 @@
     position: fixed
     bottom: 0
     left: 50%
-    margin-left: -225px
-    width: 450px
+    margin-left: -300px
+    width: 600px
     text-align: center
-    z-index: 1000
+    z-index: 2001
     background-color: #333
     border-radius: 5px
     color: #ddd
+
+    &.fullScreen.minimized
+      left: auto
+      right: 0
+      width: auto
+      margin-left: 0
 
     .btn
       padding: 6px 6px

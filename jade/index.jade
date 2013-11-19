@@ -32,6 +32,29 @@ html
     style#injected-css
   body
     #interaction(ng-controller="MainController")
+      .floater(ng-class='{fullScreen: fullScreen, minimized: minimized}')
+        span.main-bar(ng-hide='minimized')
+          a(href="https://github.com/jazzui/jazzui") Jazzui
+          | &nbsp;by&nbsp;
+          a.author-link(href="http://jaredforsyth.com") Jared Forsyth
+          input(ng-model="docTitle")
+          .btn(ng-click="download()", data-toggle='tooltip', title='Download your prototype')
+            i.glyphicon.glyphicon-cloud-download
+          .btn(ng-click="open()", data-toggle='tooltip', title='Open a past prototype')
+            i.glyphicon.glyphicon-folder-open
+          .btn(ng-click="duplicate()", data-toggle='tooltip', title='Duplicate this prototype')
+            i.glyphicon.glyphicon-edit
+          .btn(ng-click="toggleFullScreen()", data-toggle='tooltip',
+               title='View the Prototype Full-Screen')
+            i(class="glyphicon {{ fullScreen ? 'glyphicon-resize-small' : 'glyphicon-fullscreen' }}")
+          span.zoom-ctrl(ng-hide='fullScreen')
+            .btn(ng-click="zoomIn()", data-toggle='tooltip', title='Zoom In')
+              i.glyphicon.glyphicon-zoom-in
+            span.zoomLevel {{ zoomLevel }}%
+            .btn(ng-click="zoomOut()", data-toggle='tooltip', title='Zoom Out')
+              i.glyphicon.glyphicon-zoom-out
+        .btn(ng-click="toggleMinimized()", data-toggle='tooltip', title='Minimize', ng-show='fullScreen')
+          i.glyphicon.glyphicon-arrow-down(ng-class="{ minimized ? 'minimized' }")
       .open-back(ng-show='showOpenDialog', ng-click='closeOpenDialog()')
       .open-dialog(ng-show='showOpenDialog')
         button.btn.btn-default.close-btn.pull-right(ng-click='closeOpenDialog()') &times;
@@ -67,17 +90,6 @@ html
           |Then open <a href="http://localhost:8000">localhost:8000</a>
           != " and you're there!"
         a#download-link.btn.btn-primary(download="prototype.zip") Download the Zip
-      .floater
-        a(href="https://github.com/jazzui/jazzui") Jazzui
-        | &nbsp;by&nbsp;
-        a.author-link(href="http://jaredforsyth.com") Jared Forsyth
-        input(ng-model="docTitle")
-        .btn(ng-click="download()", data-toggle='tooltip', title='Download your prototype')
-          i.glyphicon.glyphicon-cloud-download
-        .btn(ng-click="open()", data-toggle='tooltip', title='Open a past prototype')
-          i.glyphicon.glyphicon-folder-open
-        .btn(ng-click="duplicate()", data-toggle='tooltip', title='Duplicate this prototype')
-          i.glyphicon.glyphicon-edit
     .main
       .left-column
         .jade.section

@@ -181,6 +181,8 @@ module.exports = function (document, window) {
   var app = angular.module('JazzUI', [])
   app.controller('MainController', ['$scope', function ($scope) {
     $scope.docTitle = 'Untitled'
+    $scope.zoomLevel = 80;
+    
     reTitle = function (norefresh) {
       try {
         $scope.docTitle = JSON.parse(window.localStorage['jui.' + hash]).name
@@ -198,6 +200,7 @@ module.exports = function (document, window) {
       data.name = value
       window.localStorage['jui.' + hash] = JSON.stringify(data)
     })
+
     $scope.download = function () {
       var zip = new JSZip()
         , main = zip.folder('prototype')
@@ -253,6 +256,36 @@ module.exports = function (document, window) {
       window.localStorage[pref + '.xon'] = mirrors.xm.getValue()
       window.location.hash = id
     }
+    
+    $scope.zoomIn = function () {
+      if ($scope.zoomLevel < 250) {
+        $scope.zoomLevel += 10;
+      }
+    }
+
+    $scope.zoomOut = function () {
+      if ($scope.zoomLevel > 20) {
+        $scope.zoomLevel -= 10;
+      }
+    }
+
+    var outputEl = document.getElementById('output')
+    $scope.fullScreen = false
+    $scope.$watch('zoomLevel', function (value) {
+      outputEl.style.zoom = value + '%';
+    })
+    $scope.$watch('fullScreen', function (value) {
+      if (value) outputEl.classList.add('fullScreen')
+      else outputEl.classList.remove('fullScreen')
+    })
+    $scope.toggleFullScreen = function () {
+      $scope.fullScreen = !$scope.fullScreen
+    }
+    $scope.minimized = false
+    $scope.toggleMinimized = function () {
+      $scope.minimized = !$scope.minimized
+    }
+
     
   }]).directive("toggle", function() {
     return {

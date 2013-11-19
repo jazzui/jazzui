@@ -1,4 +1,3 @@
-zoom: 80%
 
 .starter-template
   padding: 40px 15px
