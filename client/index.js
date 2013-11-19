@@ -4,14 +4,10 @@ var xon = require('xon')
 
   , Manager = require('./manager')
 
-  , jadeTpl = require('./tpl/jade.txt')
-  , stylusTpl = require('./tpl/stylus.txt')
-  , xonTpl = require('./tpl/xon.txt')
-
   , tpls = {
-      jade: jadeTpl,
-      stylus: stylusTpl,
-      xon: xonTpl,
+      jade: require('./tpl/jade.txt'),
+      stylus: require('./tpl/stylus.txt'),
+      xon: require('./tpl/xon.txt'),
       outjade: require('./tpl/outjade.txt'),
       outjs: require('./tpl/outjs.txt'),
       makefile: require('./tpl/makefile.txt'),
@@ -103,9 +99,9 @@ module.exports = function (document, window) {
     }
     if (reTitle) reTitle()
 
-    mirrors.jm.setValue(window.localStorage['jui.' + hash + '.jade'] || jadeTpl)
-    mirrors.sm.setValue(window.localStorage['jui.' + hash + '.stylus'] || stylusTpl)
-    mirrors.xm.setValue(window.localStorage['jui.' + hash + '.xon'] || xonTpl)
+    mirrors.jade.setValue(window.localStorage['jui.' + hash + '.jade'] || tpls.jade)
+    mirrors.stylus.setValue(window.localStorage['jui.' + hash + '.stylus'] || tpls.stylus)
+    mirrors.xon.setValue(window.localStorage['jui.' + hash + '.xon'] || tpls.xon)
   })
 
   ;['jade-mirror',
@@ -114,7 +110,7 @@ module.exports = function (document, window) {
     els[id] = document.getElementById(id)
   })
   
-  var manager = new Manager(document, null)
+  var manager = new Manager(document)
 
   function makeMirror(name, el, txt, mode, onChange) {
     txt = window.localStorage['jui.' + hash + '.' + name] || txt
@@ -159,32 +155,28 @@ module.exports = function (document, window) {
     return m
   }
 
-  angular.module('MyApp', [])
-    .factory('getData', function () {
-      return function (cb) {
-        manager.xon(null, cb)
+  var mirrors = {}
+    , langs = ['jade', 'stylus', 'xon']
+    , cmLangs = {
+        jade: 'jade',
+        stylus: 'jade',
+        xon: 'javascript'
       }
-    })
-    .controller('MainController', ['$scope', 'getData', function ($scope, getData) {
-      getData(function (data, cached) {
-        for (var name in data) {
-          if (!name.match(/^[a-zA-Z0-9_-]+$/)) continue;
-          $scope[name] = data[name]
-        }
-        if (!cached) $scope.$digest()
-      })
-    }])
 
-  var mirrors = {
-    jm: makeMirror('jade', els['jade-mirror'], jadeTpl, 'jade', manager.html.bind(manager)),
-    sm: makeMirror('stylus', els['stylus-mirror'], stylusTpl, 'jade', manager.styl.bind(manager)),
-    xm: makeMirror('xon', els['xon-mirror'], xonTpl, 'javascript', manager.xon.bind(manager)),
-  }
+  var myApp = angular.module('MyApp', [])
+    .controller('MainController', ['$scope', function ($scope) {
+      $scope.loadingData = true
+      manager.xon(null, $scope, myApp)
+    }])
 
   var app = angular.module('JazzUI', [])
   app.controller('MainController', ['$scope', function ($scope) {
     $scope.docTitle = 'Untitled'
     $scope.zoomLevel = 80;
+
+    manager.zoomIt = function (el) {
+      el.style.zoom = $scope.zoomLevel + '%';
+    }
     
     reTitle = function (norefresh) {
       try {
@@ -215,11 +207,10 @@ module.exports = function (document, window) {
       main.file('component.json', tpls.componentjson)
       main.file('Makefile', tpls.makefile)
       jadef.file('index.jade', tpls.outjade)
-      jadef.file('proto.jade', mirrors.jm.getValue())
+      jadef.file('proto.jade', mirrors.jade.getValue())
       stylf.file('index.styl', 'body\n  @import "proto.styl"\n')
-      stylf.file('proto.styl', mirrors.sm.getValue())
-      var outjs = tpls.outjs.replace('/** INJECT **/', mirrors.xm.getValue().replace(/\n/g, '\n        '))
-      main.file('index.js', outjs)
+      stylf.file('proto.styl', mirrors.stylus.getValue())
+      main.file('index.js', mirrors.xon.getValue())
 
       var blob = zip.generate({ type: 'blob' })
       document.getElementById('download-link').href = window.URL.createObjectURL(blob);
@@ -253,9 +244,9 @@ module.exports = function (document, window) {
       var id = genId()
         , pref = 'jui.' + id
       window.localStorage[pref] = window.localStorage[hash]
-      window.localStorage[pref + '.jade'] = mirrors.jm.getValue()
-      window.localStorage[pref + '.stylus'] = mirrors.sm.getValue()
-      window.localStorage[pref + '.xon'] = mirrors.xm.getValue()
+      window.localStorage[pref + '.jade'] = mirrors.jade.getValue()
+      window.localStorage[pref + '.stylus'] = mirrors.stylus.getValue()
+      window.localStorage[pref + '.xon'] = mirrors.xon.getValue()
       window.location.hash = id
     }
     
@@ -274,11 +265,11 @@ module.exports = function (document, window) {
     var outputEl = document.getElementById('output')
     $scope.fullScreen = false
     $scope.$watch('zoomLevel', function (value) {
-      outputEl.style.zoom = value + '%';
+      manager.els.output.style.zoom = value + '%';
     })
     $scope.$watch('fullScreen', function (value) {
-      if (value) outputEl.classList.add('fullScreen')
-      else outputEl.classList.remove('fullScreen')
+      if (value) manager.els.output.classList.add('fullScreen')
+      else manager.els.output.classList.remove('fullScreen')
     })
     $scope.toggleFullScreen = function () {
       $scope.fullScreen = !$scope.fullScreen
@@ -307,6 +298,13 @@ module.exports = function (document, window) {
         });
       }
     };
+  })
+
+  langs.forEach(function (lang) {
+    mirrors[lang] = makeMirror(
+      lang, els[lang + '-mirror'], tpls[lang],
+      cmLangs[lang], manager[lang].bind(manager)
+    )
   })
 
   angular.bootstrap(document.getElementById("interaction"), ["JazzUI"])
