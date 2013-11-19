@@ -14,7 +14,6 @@ html
 
     // bootstrap theme
     link(rel='stylesheet', href='bootstrap/css/bootstrap.css')
-    link(rel='stylesheet', href='js/index.css')
 
     // non-component javascript libs
     script(src='js/angular.js')
@@ -23,6 +22,7 @@ html
     script(src='js/jszip.js')
 
     // my actual code
+    link(rel='stylesheet', href='js/index.css')
     link(rel='stylesheet', href='css/index.css')
     script(src='js/index.js')
     script.
@@ -53,8 +53,8 @@ html
             span.zoomLevel {{ zoomLevel }}%
             .btn(ng-click="zoomOut()", data-toggle='tooltip', title='Zoom Out')
               i.glyphicon.glyphicon-zoom-out
-        .btn(ng-click="toggleMinimized()", data-toggle='tooltip', title='Minimize', ng-show='fullScreen')
-          i.glyphicon.glyphicon-arrow-down(ng-class="{ minimized ? 'minimized' }")
+        .btn.minimize(ng-click="toggleMinimized()", data-toggle='tooltip', title='Minimize', ng-show='fullScreen')
+          i.glyphicon.glyphicon-arrow-down(ng-class="{ minimized : 'minimized' }")
       .open-back(ng-show='showOpenDialog', ng-click='closeOpenDialog()')
       .open-dialog(ng-show='showOpenDialog')
         button.btn.btn-default.close-btn.pull-right(ng-click='closeOpenDialog()') &times;

@@ -40,8 +40,11 @@ function genId(){
   return id
 }
 
-function tipMe(el, title) {
+function tipMe(el, title, direction) {
   var tip =  new Tip(title)
+  if (direction) {
+    tip.position(direction, {auto: false})
+  }
   el.addEventListener('mouseover', function () {
     tip.show(el)
   })
@@ -129,7 +132,7 @@ module.exports = function (document, window) {
     var reloading = true
     var reload = document.querySelector('.' + name + ' > .reload-btn')
     var tip = tipMe(reload, 'Click to disable automatic reload')
-    tip.position('south')
+    // tip.position('south')
     reload.addEventListener('click', function () {
       reloading = !reloading
       tip.message('Click to ' + (reloading ? 'dis' : 'en') + 'able automatic reload')
@@ -291,10 +294,11 @@ module.exports = function (document, window) {
     return {
       restrict: "A",
       link: function(scope, element, attrs) {
-        if (attrs.toggle !== 'tooltip') return;
+        if (attrs.toggle.indexOf('tooltip') !== 0) return;
         var tip
+          , direction = attrs.toggle.split('-')[1] || undefined
         setTimeout(function() {
-          tip = tipMe(element[0], element.attr('title'))
+          tip = tipMe(element[0], element.attr('title'), direction)
         }, 0);
         attrs.$observe('title', function () {
           if (tip) tip.message(element.attr('title'))
