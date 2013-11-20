@@ -1,3 +1,19 @@
+.tip {
+  z-index: 2005;
+  padding: 0;
+}
+.tip.tip-south {
+  padding-bottom: 5px;
+}
+.tip.tip-east {
+  padding-right: 5px;
+}
+.tip.tip-north {
+  padding-top: 5px;
+}
+.tip.tip-west {
+  padding-left: 5px;
+}
 .reload-btn {
   position: absolute;
   top: 0;
@@ -10,6 +26,16 @@
 #output {
   position: relative;
   overflow: auto;
+  background-color: #fff;
+}
+#output.fullScreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  zoom: 100% !important;
 }
 #interaction .dl-dialog,
 #interaction .open-dialog {
@@ -25,7 +51,7 @@
   border-radius: 10px;
   padding: 20px 30px;
   box-sizing: border-box;
-  z-index: 1005;
+  z-index: 2004;
 }
 #interaction .dl-dialog .close-btn,
 #interaction .open-dialog .close-btn {
@@ -42,27 +68,30 @@
   list-style: none;
   padding: 5px 10px;
 }
-#interaction .open-dialog ul li {
+#interaction .open-dialog table {
+  padding: 0;
+  margin: 0;
+}
+#interaction .open-dialog table tr {
   cursor: pointer;
 }
-#interaction .open-dialog ul li .name {
+#interaction .open-dialog table tr .name {
   margin-right: 20px;
 }
-#interaction .open-dialog ul li .date {
+#interaction .open-dialog table tr .date {
   margin-right: 20px;
 }
-#interaction .open-dialog ul li .delete-btn {
+#interaction .open-dialog table tr .delete-btn {
   color: #f00;
   font-weight: bold;
-  line-height: 6px;
-  padding: 12px;
-  margin-top: -5px;
-  margin-right: -10px;
+  line-height: 11px;
+  padding: 9px;
+  margin-left: 3px;
 }
-#interaction .open-dialog ul li .delete-btn:hover {
-  background-color: #777;
+#interaction .open-dialog table tr .delete-btn:hover {
+  background-color: #ddd;
 }
-#interaction .open-dialog ul li:hover {
+#interaction .open-dialog table tr:hover {
   background-color: #ccc;
 }
 #interaction .dl-dialog {
@@ -78,7 +107,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1004;
+  z-index: 2003;
   background-color: #999;
   opacity: 0.5;
   cursor: pointer;
@@ -87,13 +116,34 @@
   position: fixed;
   bottom: 0;
   left: 50%;
-  margin-left: -225px;
-  width: 450px;
+  margin-left: -300px;
+  width: 600px;
   text-align: center;
-  z-index: 1000;
+  z-index: 2001;
   background-color: #333;
   border-radius: 5px;
   color: #ddd;
+}
+#interaction .floater .minimize i {
+  -webkit-transform: rotate(-45deg);
+  zoom: 80%;
+}
+#interaction .floater.minimized {
+  border-radius: 0;
+  border-top-left-radius: 5px;
+}
+#interaction .floater.minimized .minimize i {
+  -webkit-transform: rotate(135deg);
+}
+#interaction .floater.fullScreen {
+  width: 520px;
+  margin-left: -260px;
+}
+#interaction .floater.fullScreen.minimized {
+  left: auto;
+  right: 0;
+  width: auto;
+  margin-left: 0;
 }
 #interaction .floater .btn {
   padding: 6px 6px;

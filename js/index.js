@@ -26,10 +26,14 @@ function require(path, parent, orig) {
   // perform real require()
   // by invoking the module's
   // registered function
-  if (!module.exports) {
-    module.exports = {};
-    module.client = module.component = true;
-    module.call(this, module.exports, require.relative(resolved), module);
+  if (!module._resolving && !module.exports) {
+    var mod = {};
+    mod.exports = {};
+    mod.client = mod.component = true;
+    module._resolving = true;
+    module.call(this, mod.exports, require.relative(resolved), mod);
+    delete module._resolving;
+    module.exports = mod.exports;
   }
 
   return module.exports;
@@ -287,55 +291,86 @@ function joinClasses(val) {\n\
 }\n\
 \n\
 /**\n\
+ * Render the given classes.\n\
+ *\n\
+ * @param {Array} classes\n\
+ * @param {Array.<Boolean>} escaped\n\
+ * @return {String}\n\
+ */\n\
+exports.cls = function cls(classes, escaped) {\n\
+  var buf = [];\n\
+  for (var i = 0; i < classes.length; i++) {\n\
+    if (escaped && escaped[i]) {\n\
+      buf.push(exports.escape(joinClasses([classes[i]])));\n\
+    } else {\n\
+      buf.push(joinClasses(classes[i]));\n\
+    }\n\
+  }\n\
+  var text = joinClasses(buf);\n\
+  if (text.length) {\n\
+    return ' class=\"' + text + '\"';\n\
+  } else {\n\
+    return '';\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Render the given attribute.\n\
+ *\n\
+ * @param {String} key\n\
+ * @param {String} val\n\
+ * @param {Boolean} escaped\n\
+ * @param {Boolean} terse\n\
+ * @return {String}\n\
+ */\n\
+exports.attr = function attr(key, val, escaped, terse) {\n\
+  if ('boolean' == typeof val || null == val) {\n\
+    if (val) {\n\
+      return ' ' + (terse ? key : key + '=\"' + key + '\"');\n\
+    } else {\n\
+      return '';\n\
+    }\n\
+  } else if (0 == key.indexOf('data') && 'string' != typeof val) {\n\
+    return ' ' + key + \"='\" + JSON.stringify(val).replace(/'/g, '&apos;') + \"'\";\n\
+  } else if (escaped) {\n\
+    return ' ' + key + '=\"' + exports.escape(val) + '\"';\n\
+  } else {\n\
+    return ' ' + key + '=\"' + val + '\"';\n\
+  }\n\
+};\n\
+\n\
+/**\n\
  * Render the given attributes object.\n\
  *\n\
  * @param {Object} obj\n\
  * @param {Object} escaped\n\
  * @return {String}\n\
- * @api private\n\
  */\n\
+exports.attrs = function attrs(obj, escaped, terse){\n\
+  var buf = [];\n\
 \n\
-exports.attrs = function attrs(obj, escaped){\n\
-  var buf = []\n\
-    , terse = obj.terse;\n\
+  var keys = Object.keys(obj);\n\
 \n\
-  delete obj.terse;\n\
-  var keys = Object.keys(obj)\n\
-    , len = keys.length;\n\
-\n\
-  if (len) {\n\
-    buf.push('');\n\
-    for (var i = 0; i < len; ++i) {\n\
+  if (keys.length) {\n\
+    for (var i = 0; i < keys.length; ++i) {\n\
       var key = keys[i]\n\
         , val = obj[key];\n\
 \n\
-      if ('boolean' == typeof val || null == val) {\n\
-        if (val) {\n\
-          terse\n\
-            ? buf.push(key)\n\
-            : buf.push(key + '=\"' + key + '\"');\n\
-        }\n\
-      } else if (0 == key.indexOf('data') && 'string' != typeof val) {\n\
-        buf.push(key + \"='\" + JSON.stringify(val).replace(/'/g, '&apos;') + \"'\");\n\
-      } else if ('class' == key) {\n\
-        if (escaped && escaped[key]){\n\
-          if (val = exports.escape(joinClasses(val))) {\n\
-            buf.push(key + '=\"' + val + '\"');\n\
-          }\n\
-        } else {\n\
-          if (val = joinClasses(val)) {\n\
-            buf.push(key + '=\"' + val + '\"');\n\
+      if ('class' == key) {\n\
+        if (val = joinClasses(val)) {\n\
+          if (escaped && escaped[key]){\n\
+            buf.push(' ' + key + '=\"' + exports.escape(val) + '\"');\n\
+          } else {\n\
+            buf.push(' ' + key + '=\"' + val + '\"');\n\
           }\n\
         }\n\
-      } else if (escaped && escaped[key]) {\n\
-        buf.push(key + '=\"' + exports.escape(val) + '\"');\n\
       } else {\n\
-        buf.push(key + '=\"' + val + '\"');\n\
+        buf.push(exports.attr(key, val, escaped && escaped[key], terse));\n\
       }\n\
     }\n\
   }\n\
 \n\
-  return buf.join(' ');\n\
+  return buf.join('');\n\
 };\n\
 \n\
 /**\n\
@@ -2461,25 +2496,366 @@ require.register("component-tip/template.js", Function("exports, require, module
 ));
 
 require.register("jazzui/client/index.js", Function("exports, require, module",
-"\n\
+"/* globals angular: true, window: true, document: true */\n\
+\n\
 var xon = require('xon')\n\
   , Tip = require('tip')\n\
 \n\
   , Manager = require('./manager')\n\
+  , LocalStore = require('./store').LocalStore\n\
 \n\
-  , jadeTpl = require('./tpl/jade.txt')\n\
-  , stylusTpl = require('./tpl/stylus.txt')\n\
-  , xonTpl = require('./tpl/xon.txt')\n\
+  , tpls = require('./tpls')\n\
+  , utils = require('./utils')\n\
 \n\
-  , tpls = {\n\
-      jade: jadeTpl,\n\
-      stylus: stylusTpl,\n\
-      xon: xonTpl,\n\
-      outjade: require('./tpl/outjade.txt'),\n\
-      outjs: require('./tpl/outjs.txt'),\n\
-      makefile: require('./tpl/makefile.txt'),\n\
-      componentjson: require('./tpl/componentjson.txt'),\n\
+\n\
+angular.module('helpers', []).factory('manager', function () {\n\
+  return new Manager(document)\n\
+}).directive(\"toggle\", function() {\n\
+  return {\n\
+    restrict: \"A\",\n\
+    link: function(scope, element, attrs) {\n\
+      if (attrs.toggle.indexOf('tooltip') !== 0) return;\n\
+      var tip\n\
+      , direction = attrs.toggle.split('-')[1] || undefined\n\
+      setTimeout(function() {\n\
+        tip = utils.tipMe(element[0], element.attr('title'), direction)\n\
+      }, 0);\n\
+      attrs.$observe('title', function () {\n\
+        if (tip) tip.message(element.attr('title'))\n\
+      });\n\
+      scope.$on('$destroy', function () {\n\
+        tip.hide()\n\
+      });\n\
     }\n\
+  };\n\
+})\n\
+\n\
+function MainController (manager, $scope, store) {\n\
+  // $scope.docTitle = 'Untitled'\n\
+  $scope.zoomLevel = 80;\n\
+\n\
+  var hash = utils.initHash(window.location.hash)\n\
+  store.currentHash = hash\n\
+\n\
+  function load(hash) {\n\
+    $scope.loading = true\n\
+    store.get(hash, function (err, title, data, cached) {\n\
+      $scope.loading = false\n\
+      mirrors.stylus.setValue(data.stylus || tpls.stylus)\n\
+      mirrors.jade.setValue(data.jade || tpls.jade)\n\
+      mirrors.xon.setValue(data.xon || tpls.xon)\n\
+      $scope.docTitle = title || 'Untitled'\n\
+      if (!cached) $scope.$digest()\n\
+    })\n\
+  }\n\
+\n\
+  window.addEventListener('hashchange', function () {\n\
+    if ('#' + hash == window.location.hash) return\n\
+    hash = utils.initHash(window.location.hash)\n\
+    store.currentHash = hash\n\
+    load(hash)\n\
+    $scope.$digest()\n\
+  })\n\
+\n\
+  manager.zoomIt = function (el) {\n\
+    el.style.zoom = $scope.zoomLevel + '%';\n\
+  }\n\
+\n\
+  $scope.$watch('docTitle', utils.debounce(function (value, prev) {\n\
+    if (!value) return\n\
+    // if (!prev && value === 'Untitled') return\n\
+    var data = {\n\
+      modified: new Date()\n\
+    }\n\
+    store.saveName(hash, value, function (err) {\n\
+      window.location.hash = hash\n\
+    })\n\
+  }))\n\
+\n\
+  $scope.getModifiedTime = function (doc) {\n\
+    return doc.modified.getTime()\n\
+  }\n\
+\n\
+  $scope.download = function () {\n\
+    var blob = utils.createZip(tpls, mirrors)\n\
+    document.getElementById('download-link').href = window.URL.createObjectURL(blob);\n\
+    $scope.showDlDialog = true\n\
+  }\n\
+  $scope.closeDlDialog = function () {\n\
+    $scope.showDlDialog = false\n\
+  }\n\
+  $scope.open = function () {\n\
+    store.list(function (err, docs, cached) {\n\
+      $scope.docs = docs\n\
+      if (!cached) $scope.$digest()\n\
+    })\n\
+    $scope.showOpenDialog = true\n\
+  }\n\
+  $scope.openDoc = function (doc) {\n\
+    window.location.hash = doc.hash\n\
+    $scope.showOpenDialog = false\n\
+  }\n\
+  $scope.removeDoc = function (doc) {\n\
+    store.remove(doc.hash, function (err, docs, cached) {\n\
+      $scope.docs = docs\n\
+      if (!cached) $scope.$digest()\n\
+    })\n\
+  }\n\
+  $scope.closeOpenDialog = function () {\n\
+    $scope.showOpenDialog = false\n\
+  }\n\
+\n\
+  $scope.duplicate = function () {\n\
+    var id = utils.genId()\n\
+    store.save(\n\
+      id,\n\
+      $scope.docTitle,\n\
+      {\n\
+        stylus: mirrors.stylus.getValue(),\n\
+        jade: mirrors.jade.getValue(),\n\
+        xon: mirrors.xon.getValue()\n\
+      },\n\
+      function () {}\n\
+    )\n\
+    window.location.hash = id\n\
+  }\n\
+  \n\
+  $scope.zoomIn = function () {\n\
+    if ($scope.zoomLevel < 250) {\n\
+      $scope.zoomLevel += 10;\n\
+    }\n\
+  }\n\
+\n\
+  $scope.zoomOut = function () {\n\
+    if ($scope.zoomLevel > 20) {\n\
+      $scope.zoomLevel -= 10;\n\
+    }\n\
+  }\n\
+\n\
+  var outputEl = document.getElementById('output')\n\
+  $scope.fullScreen = false\n\
+  $scope.$watch('zoomLevel', function (value) {\n\
+    manager.els.output.style.zoom = value + '%';\n\
+  })\n\
+  $scope.$watch('fullScreen', function (value) {\n\
+    if (value) manager.els.output.classList.add('fullScreen')\n\
+    else manager.els.output.classList.remove('fullScreen')\n\
+  })\n\
+  $scope.toggleFullScreen = function () {\n\
+    $scope.fullScreen = !$scope.fullScreen\n\
+    if (!$scope.fullScreen) {\n\
+      $scope.minimized = false\n\
+    }\n\
+  }\n\
+  $scope.minimized = false\n\
+  $scope.toggleMinimized = function () {\n\
+    $scope.minimized = !$scope.minimized\n\
+  }\n\
+\n\
+  var mirrors = {}\n\
+    , langs = ['jade', 'stylus', 'xon']\n\
+    , cmLangs = {\n\
+        jade: 'jade',\n\
+        stylus: 'jade',\n\
+        xon: 'javascript'\n\
+      }\n\
+\n\
+  langs.forEach(function (lang) {\n\
+    mirrors[lang] = utils.makeMirror(\n\
+      lang, document.getElementById(lang + '-mirror'),\n\
+      cmLangs[lang], store, manager[lang].bind(manager)\n\
+    )\n\
+  })\n\
+\n\
+  load(hash)\n\
+\n\
+}\n\
+\n\
+\n\
+module.exports = function (document, window) {\n\
+  var manager = new Manager(document)\n\
+  var app = angular.module('JazzUI', ['helpers'])\n\
+  app.controller('MainController', ['$scope', 'store', MainController.bind(null, manager)])\n\
+\n\
+  var myApp = angular.module('MyApp', [])\n\
+    .controller('MainController', ['$scope', function ($scope) {\n\
+      $scope.loadingData = true\n\
+      console.log('hi', manager)\n\
+      manager.xon(null, $scope, myApp)\n\
+    }])\n\
+\n\
+  app.factory('store', function () {\n\
+    return new LocalStore(window.localStorage)\n\
+  })\n\
+  angular.bootstrap(document.getElementById(\"interaction\"), [\"JazzUI\"])\n\
+\n\
+}\n\
+//@ sourceURL=jazzui/client/index.js"
+));
+require.register("jazzui/client/manager.js", Function("exports, require, module",
+"\n\
+/* globals stylus: true, jade: true, angular: true */\n\
+\n\
+var xon = require('xon')\n\
+\n\
+module.exports = Manager;\n\
+\n\
+function compileXon(txt) {\n\
+  /* jshint -W054: false */\n\
+  var module = {\n\
+    exports: {}\n\
+  }\n\
+  new Function('require', 'module', txt)(require, module)\n\
+  return module.exports\n\
+}\n\
+\n\
+function Manager(document){\n\
+  var els = {}\n\
+    , data = {\n\
+        js: '',\n\
+        styl: '',\n\
+        xon: '',\n\
+        jade: ''\n\
+      }\n\
+  ;['output',\n\
+    'injected-css'].map(function (id) {\n\
+    els[id] = document.getElementById(id)\n\
+  })\n\
+  this.els = els\n\
+  this.data = data\n\
+  this.zoomIt = null\n\
+  this.lastXon = null\n\
+}\n\
+\n\
+Manager.prototype = {\n\
+  jade: function (txt) {\n\
+    if (arguments.length === 0) return this.data.jade\n\
+    var parent = this.els.output.parentNode\n\
+      , html\n\
+    try {\n\
+      html = jade.compile(txt)()\n\
+    } catch (e) {\n\
+      console.error(\"Jade failed to compile\")\n\
+      return\n\
+    }\n\
+    this.data.jade = txt\n\
+    parent.innerHTML = '<div id=\"output\">' + html + '</div>'\n\
+    angular.bootstrap((this.els.output = parent.firstChild), ['MyApp'])\n\
+    if (this.zoomIt) this.zoomIt(this.els.output)\n\
+  },\n\
+  stylus: function (txt) {\n\
+    var self = this\n\
+    txt = '#output\\n\
+  ' + txt.replace(/\\n\
+/g,'\\n\
+  ')\n\
+    stylus(txt).render(function (err, css) {\n\
+      if (!css) return\n\
+      self.data.styl = txt\n\
+      self.els['injected-css'].innerHTML = css\n\
+    })\n\
+  },\n\
+  updateXon: function (proto, cached) {\n\
+    if (!this.app || !this.scope) {\n\
+      // console.error('No fetcher or scope')\n\
+      return\n\
+    }\n\
+    var self = this\n\
+\n\
+    this.scope.loadingData = true\n\
+    function gotData(err, data, cached) {\n\
+      if (err) {\n\
+        console.error('get data fail')\n\
+        return\n\
+      }\n\
+      self.lastXonData = data\n\
+      self.scope.loadingData = false\n\
+      for (var name in data) {\n\
+        if (!name.match(/^[a-zA-Z0-9_-]+$/)) continue;\n\
+        self.scope[name] = data[name]\n\
+      }\n\
+      try {\n\
+        proto.init(self.scope, self.app)\n\
+      } catch (e) {\n\
+        console.error('initialize fail')\n\
+      }\n\
+      if (!cached) self.scope.$digest()\n\
+    }\n\
+\n\
+    if (cached) {\n\
+      return gotData(null, cached, true)\n\
+    }\n\
+    try {\n\
+      proto.getData(gotData)\n\
+    } catch (e) {\n\
+      console.log('getdata fail')\n\
+      return\n\
+    }\n\
+    this.scope.$digest()\n\
+  },\n\
+  xon: function (txt, scope, app) {\n\
+    if (arguments.length === 0) return this.data.xon\n\
+    if (arguments.length === 3) {\n\
+      this.scope = scope\n\
+      this.app = app\n\
+      if (!txt) {\n\
+        if (this.lastXon) {\n\
+          return this.updateXon(this.lastXon, this.lastXonData)\n\
+        }\n\
+        txt = this.data.xon\n\
+      }\n\
+    }\n\
+    var proto\n\
+    try {\n\
+      proto = compileXon(txt)\n\
+    } catch (e) {\n\
+      console.log('xon error!', e)\n\
+      return false\n\
+    }\n\
+    if ('function' !== typeof proto.getData || 'function' !== typeof proto.init) {\n\
+      return false\n\
+    }\n\
+    this.data.xon = txt\n\
+    this.lastXon = proto\n\
+    this.updateXon(proto)\n\
+  }\n\
+}\n\
+//@ sourceURL=jazzui/client/manager.js"
+));
+require.register("jazzui/client/utils.js", Function("exports, require, module",
+"/* globals alert: true, CodeMirror: true, JSZip: true, window: true, document: true */\n\
+\n\
+var Tip = require('tip')\n\
+\n\
+module.exports = {\n\
+  genId: genId,\n\
+  tipMe: tipMe,\n\
+  debounce: debounce,\n\
+  rebounce: rebounce,\n\
+  initHash: initHash,\n\
+  createZip: createZip,\n\
+  makeMirror: makeMirror\n\
+}\n\
+\n\
+// called the first time, then sets a timeout. All calls within the\n\
+// \"bounce\" are ignored, but the arguments are updated, such that the\n\
+// last call before the bounce will be executed once the bounce is\n\
+// done.\n\
+function rebounce(fn, num) {\n\
+  num = num || 300\n\
+  var id, args\n\
+  return function () {\n\
+    var self = this\n\
+    args = arguments\n\
+    if (id) return\n\
+    fn.apply(this, arguments)\n\
+    id = setTimeout(function () {\n\
+      // if it's been called during the bounce, hit that up.\n\
+      if (args) fn.apply(self, args)\n\
+      id = null\n\
+    }, num)\n\
+  }\n\
+}\n\
 \n\
 function debounce(fn, num) {\n\
   num = num || 300\n\
@@ -2503,8 +2879,11 @@ function genId(){\n\
   return id\n\
 }\n\
 \n\
-function tipMe(el, title) {\n\
+function tipMe(el, title, direction) {\n\
   var tip =  new Tip(title)\n\
+  if (direction) {\n\
+    tip.position(direction, {auto: false})\n\
+  }\n\
   el.addEventListener('mouseover', function () {\n\
     tip.show(el)\n\
   })\n\
@@ -2514,323 +2893,222 @@ function tipMe(el, title) {\n\
   return tip\n\
 }\n\
 \n\
-function getDocs() {\n\
-  var docs = []\n\
-    , doc\n\
-  for (var name in window.localStorage) {\n\
-    if (name.slice(0, 'jui.'.length) !== 'jui.') continue;\n\
-    if (name.split('.').length > 2) continue;\n\
-    try {\n\
-      doc = JSON.parse(window.localStorage[name])\n\
-      doc.modified = new Date(doc.modified)\n\
-      doc.hash = name.slice('jui.'.length)\n\
-      docs.push(doc)\n\
-    } catch (e) {\n\
-      console.error(\"failed to parse\", name)\n\
-    }\n\
+function initHash(hash) {\n\
+  if (!hash || hash == '#') {\n\
+    return genId()\n\
   }\n\
-  return docs\n\
+  if (!window.location.hash.match(/^#[a-zA-Z0-9]{10}/)) {\n\
+    alert(\"Sorry, file not found. Please check your url\")\n\
+    window.location = '/'\n\
+    return\n\
+  }\n\
+  return window.location.hash.slice(1)\n\
 }\n\
 \n\
-module.exports = function (document, window) {\n\
-  var CodeMirror = window.CodeMirror\n\
-    , angular = window.angular\n\
-    , stylus = window.stylus\n\
-    , jade = window.jade\n\
-    , els = {}\n\
-    , reTitle\n\
-    , hash\n\
+function createZip(tpls, mirrors) {\n\
+  var zip = new JSZip()\n\
+    , main = zip.folder('prototype')\n\
+    , jsf = main.folder(\"js\")\n\
+    , cssf = main.folder(\"css\")\n\
+    , stylf = main.folder(\"styl\")\n\
+    , jadef = main.folder(\"jade\")\n\
 \n\
-  if (!window.location.hash) {\n\
-    hash = genId()\n\
-  } else {\n\
-    if (!window.location.hash.match(/^#[a-zA-Z0-9]{10}/)) {\n\
-      alert(\"Sorry, file not found. Please check your url\")\n\
-      return window.location = '/'\n\
-    }\n\
-    hash = window.location.hash.slice(1)\n\
-  }\n\
+  main.file('component.json', tpls.componentjson)\n\
+  main.file('Makefile', tpls.makefile)\n\
+  jadef.file('index.jade', tpls.outjade)\n\
+  jadef.file('proto.jade', mirrors.jade.getValue())\n\
+  stylf.file('index.styl', 'body\\n\
+  @import \"proto.styl\"\\n\
+')\n\
+  stylf.file('proto.styl', mirrors.stylus.getValue())\n\
+  main.file('index.js', mirrors.xon.getValue())\n\
 \n\
-  window.addEventListener('hashchange', function () {\n\
-    if ('#' + hash == window.location.hash) return\n\
-    if (!window.location.hash || window.location.hash == '#') {\n\
-      hash = genId()\n\
-    } else if (!window.location.hash.match(/^#[a-zA-Z0-9]{10}/)) {\n\
-      alert(\"Sorry, file not found. Please check your url\")\n\
-      return\n\
-    } else {\n\
-      hash = window.location.hash.slice(1)\n\
-    }\n\
-    if (reTitle) reTitle()\n\
-\n\
-    mirrors.jm.setValue(window.localStorage['jui.' + hash + '.jade'] || jadeTpl)\n\
-    mirrors.sm.setValue(window.localStorage['jui.' + hash + '.stylus'] || stylusTpl)\n\
-    mirrors.xm.setValue(window.localStorage['jui.' + hash + '.xon'] || xonTpl)\n\
-  })\n\
-\n\
-  ;['jade-mirror',\n\
-    'stylus-mirror',\n\
-    'xon-mirror'].map(function (id) {\n\
-    els[id] = document.getElementById(id)\n\
-  })\n\
-  \n\
-  var manager = new Manager(document, null)\n\
-\n\
-  function makeMirror(name, el, txt, mode, onChange) {\n\
-    txt = window.localStorage['jui.' + hash + '.' + name] || txt\n\
-    var m = new CodeMirror(el, {\n\
-      value: txt,\n\
-      mode: mode,\n\
-      theme: 'twilight',\n\
-      extraKeys: {\n\
-        Tab: function(cm) {\n\
-          var spaces = Array(cm.getOption(\"indentUnit\") + 1).join(\" \");\n\
-          cm.replaceSelection(spaces, \"end\", \"+input\");\n\
-        }\n\
-      }\n\
-    })\n\
-    var reloading = true\n\
-    var reload = document.querySelector('.' + name + ' > .reload-btn')\n\
-    var tip = tipMe(reload, 'Click to disable automatic reload')\n\
-    tip.position('south')\n\
-    reload.addEventListener('click', function () {\n\
-      reloading = !reloading\n\
-      tip.message('Click to ' + (reloading ? 'dis' : 'en') + 'able automatic reload')\n\
-      reload.classList[reloading ? 'add' : 'remove']('active')\n\
-    })\n\
-    m.on('change', debounce(function (instance, change) {\n\
-      if (window.location.hash != '#' + hash && instance.doc.getValue() !== tpls[name]) {\n\
-        window.location.hash = hash\n\
-      }\n\
-      window.localStorage['jui.' + hash + '.' + name] = instance.doc.getValue()\n\
-      var data = {\n\
-        name: 'Untitled'\n\
-      }\n\
-      try {\n\
-        data = JSON.parse(window.localStorage['jui.' + hash])\n\
-      } catch (e) {}\n\
-      window.localStorage['jui.' + hash] = JSON.stringify({\n\
-        name: data.name,\n\
-        modified: new Date().getTime()\n\
-      })\n\
-      if (reloading) onChange(instance.doc.getValue())\n\
-    }))\n\
-    onChange(txt)\n\
-    return m\n\
-  }\n\
-\n\
-  angular.module('MyApp', [])\n\
-    .factory('getData', function () {\n\
-      return function (cb) {\n\
-        manager.xon(null, cb)\n\
-      }\n\
-    })\n\
-    .controller('MainController', ['$scope', 'getData', function ($scope, getData) {\n\
-      getData(function (data, cached) {\n\
-        for (var name in data) {\n\
-          if (!name.match(/^[a-zA-Z0-9_-]+$/)) continue;\n\
-          $scope[name] = data[name]\n\
-        }\n\
-        if (!cached) $scope.$digest()\n\
-      })\n\
-    }])\n\
-\n\
-  var mirrors = {\n\
-    jm: makeMirror('jade', els['jade-mirror'], jadeTpl, 'jade', manager.html.bind(manager)),\n\
-    sm: makeMirror('stylus', els['stylus-mirror'], stylusTpl, 'jade', manager.styl.bind(manager)),\n\
-    xm: makeMirror('xon', els['xon-mirror'], xonTpl, 'javascript', manager.xon.bind(manager)),\n\
-  }\n\
-\n\
-  var app = angular.module('JazzUI', [])\n\
-  app.controller('MainController', ['$scope', function ($scope) {\n\
-    $scope.docTitle = 'Untitled'\n\
-    reTitle = function (norefresh) {\n\
-      try {\n\
-        $scope.docTitle = JSON.parse(window.localStorage['jui.' + hash]).name\n\
-      } catch (e) {}\n\
-      if (!norefresh) $scope.$digest()\n\
-    }\n\
-    reTitle(true)\n\
-    $scope.$watch('docTitle', function (value, prev) {\n\
-      var data = {\n\
-        modified: new Date()\n\
-      }\n\
-      try {\n\
-        data = JSON.parse(window.localStorage['jui.' + hash])\n\
-      } catch (e) {}\n\
-      data.name = value\n\
-      window.localStorage['jui.' + hash] = JSON.stringify(data)\n\
-    })\n\
-    $scope.download = function () {\n\
-      var zip = new JSZip()\n\
-        , main = zip.folder('prototype')\n\
-        , jsf = main.folder(\"js\")\n\
-        , cssf = main.folder(\"css\")\n\
-        , stylf = main.folder(\"styl\")\n\
-        , jadef = main.folder(\"jade\")\n\
-\n\
-      main.file('component.json', tpls.componentjson)\n\
-      main.file('Makefile', tpls.makefile)\n\
-\n\
-      var outjade = tpls.outjade.replace('/** INJECT **/', mirrors.jm.getValue().replace(/\\n\
-/g, '\\n\
-    '))\n\
-      jadef.file('index.jade', outjade)\n\
-      var outstyl = 'body\\n\
-  ' + mirrors.sm.getValue().replace(/\\n\
-/g, '\\n\
-  ')\n\
-      stylf.file('index.styl', outstyl)\n\
-      var outjs = tpls.outjs.replace('/** INJECT **/', mirrors.xm.getValue().replace(/\\n\
-/g, '\\n\
-        '))\n\
-      main.file('index.js', outjs)\n\
-\n\
-      var blob = zip.generate({ type: 'blob' })\n\
-      document.getElementById('download-link').href = window.URL.createObjectURL(blob);\n\
-      $scope.showDlDialog = true\n\
-    }\n\
-    $scope.closeDlDialog = function () {\n\
-      $scope.showDlDialog = false\n\
-    }\n\
-    $scope.open = function () {\n\
-      $scope.docs = getDocs()\n\
-      $scope.showOpenDialog = true\n\
-    }\n\
-    $scope.openDoc = function (doc) {\n\
-      window.location.hash = doc.hash\n\
-      $scope.showOpenDialog = false\n\
-    }\n\
-    $scope.removeDoc = function (doc) {\n\
-      var names = Object.keys(window.localStorage)\n\
-      for (var i=0; i<names.length; i++) {\n\
-        if (names[i].indexOf('jui.' + doc.hash) === 0) {\n\
-          window.localStorage.removeItem(names[i])\n\
-        }\n\
-      }\n\
-      $scope.docs = getDocs()\n\
-    }\n\
-    $scope.closeOpenDialog = function () {\n\
-      $scope.showOpenDialog = false\n\
-    }\n\
-\n\
-    $scope.duplicate = function () {\n\
-      var id = genId()\n\
-        , pref = 'jui.' + id\n\
-      window.localStorage[pref] = window.localStorage[hash]\n\
-      window.localStorage[pref + '.jade'] = mirrors.jm.getValue()\n\
-      window.localStorage[pref + '.stylus'] = mirrors.sm.getValue()\n\
-      window.localStorage[pref + '.xon'] = mirrors.xm.getValue()\n\
-      window.location.hash = id\n\
-    }\n\
-    \n\
-  }]).directive(\"toggle\", function() {\n\
-    return {\n\
-      restrict: \"A\",\n\
-      link: function(scope, element, attrs) {\n\
-        if (attrs.toggle !== 'tooltip') return;\n\
-        var tip\n\
-        setTimeout(function() {\n\
-          tip = tipMe(element[0], element.attr('title'))\n\
-        }, 0);\n\
-        attrs.$observe('title', function () {\n\
-          if (tip) tip.message(element.attr('title'))\n\
-        });\n\
-        scope.$on('$destroy', function () {\n\
-          tip.hide()\n\
-        });\n\
-      }\n\
-    };\n\
-  })\n\
-\n\
-  angular.bootstrap(document.getElementById(\"interaction\"), [\"JazzUI\"])\n\
-\n\
+  return zip.generate({ type: 'blob' })\n\
 }\n\
-//@ sourceURL=jazzui/client/index.js"
+\n\
+function makeMirror(name, el, mode, store, onChange) {\n\
+  var m = new CodeMirror(el, {\n\
+    value: '',\n\
+    mode: mode,\n\
+    theme: 'twilight',\n\
+    extraKeys: {\n\
+      Tab: function(cm) {\n\
+        var spaces = Array(cm.getOption(\"indentUnit\") + 1).join(\" \");\n\
+        cm.replaceSelection(spaces, \"end\", \"+input\");\n\
+      }\n\
+    }\n\
+  })\n\
+  var reloading = true\n\
+  var reload = document.querySelector('.' + name + ' > .reload-btn')\n\
+  var tip = tipMe(reload, 'Click to disable automatic reload')\n\
+  // tip.position('south')\n\
+  reload.addEventListener('click', function () {\n\
+    reloading = !reloading\n\
+    tip.message('Click to ' + (reloading ? 'dis' : 'en') + 'able automatic reload')\n\
+    reload.classList[reloading ? 'add' : 'remove']('active')\n\
+  })\n\
+  var saveBouncer = rebounce(function (text) {\n\
+    store.saveOne(name, text, function (err) {\n\
+      if (err) {\n\
+        console.error('Failed to save ' + name)\n\
+      }\n\
+    })\n\
+  }, 2000)\n\
+  m.on('change', debounce(function (instance, change) {\n\
+    var text = instance.doc.getValue()\n\
+    if (reloading) onChange(text)\n\
+    saveBouncer(text)\n\
+  }))\n\
+  return m\n\
+}\n\
+\n\
+//@ sourceURL=jazzui/client/utils.js"
 ));
-require.register("jazzui/client/manager.js", Function("exports, require, module",
+require.register("jazzui/client/store.js", Function("exports, require, module",
 "\n\
-/* globals stylus: true, jade: true, angular: true */\n\
-\n\
-var xon = require('xon')\n\
-\n\
-module.exports = Manager;\n\
-\n\
-function compileXon(txt) {\n\
-  /* jshint -W054: false */\n\
-  var data = new Function('x', txt)(xon)\n\
-  return xon(data)\n\
+module.exports = {\n\
+  LocalStore: LocalStore,\n\
+  ApiStore: ApiStore\n\
 }\n\
 \n\
-function Manager(document, fetcher){\n\
-  var els = {}\n\
-    , data = {\n\
-        js: '',\n\
-        styl: '',\n\
-        xon: '',\n\
-        jade: ''\n\
+function ApiStore() {\n\
+  throw new Error(\"Not Implemented\")\n\
+}\n\
+\n\
+// ls: window.localStorage\n\
+function LocalStore(ls) {\n\
+  this.ls = ls\n\
+  this.currentHash = null\n\
+}\n\
+\n\
+// saved: {\n\
+//   name:\n\
+//   modified:\n\
+// }\n\
+LocalStore.prototype = {\n\
+  list: function (done) {\n\
+    var docs = []\n\
+      , doc\n\
+    for (var name in this.ls) {\n\
+      if (name.slice(0, 'jui.'.length) !== 'jui.') continue;\n\
+      if (name.split('.').length > 2) continue;\n\
+      try {\n\
+        doc = JSON.parse(this.ls[name])\n\
+        doc.modified = new Date(doc.modified)\n\
+        doc.hash = name.slice('jui.'.length)\n\
+        docs.push(doc)\n\
+      } catch (e) {\n\
+        console.error(\"failed to parse\", name)\n\
       }\n\
-  ;['output',\n\
-    'injected-css'].map(function (id) {\n\
-    els[id] = document.getElementById(id)\n\
-  })\n\
-  this.els = els\n\
-  this.data = data\n\
-  this.fetcher = fetcher\n\
-  this.lastXon = null\n\
-}\n\
-\n\
-Manager.prototype = {\n\
-  html: function (txt) {\n\
-    if (arguments.length === 0) return this.data.html\n\
-    var parent = this.els.output.parentNode\n\
-      , html\n\
-    try {\n\
-      html = jade.compile(txt)()\n\
-    } catch (e) {\n\
-      return\n\
     }\n\
-    this.data.jade = txt\n\
-    parent.innerHTML = '<div id=\"output\">' + html + '</div>'\n\
-    angular.bootstrap((this.els.output = parent.firstChild), ['MyApp'])\n\
+    done(null, docs, true)\n\
   },\n\
-  styl: function (txt) {\n\
-    var self = this\n\
-    txt = '#output\\n\
-  ' + txt.replace(/\\n\
-/g,'\\n\
-  ')\n\
-    stylus(txt).render(function (err, css) {\n\
-      if (!css) return\n\
-      self.data.styl = txt\n\
-      self.els['injected-css'].innerHTML = css\n\
+  remove: function (hash, done) {\n\
+    var names = Object.keys(this.ls)\n\
+    for (var i=0; i<names.length; i++) {\n\
+      if (names[i].indexOf('jui.' + hash) === 0) {\n\
+        this.ls.removeItem(names[i])\n\
+      }\n\
+    }\n\
+    this.list(done)\n\
+  },\n\
+  // {hash:, name:, jade:, stylus:, xon:, modified:}\n\
+  get: function (hash, done) {\n\
+    if (arguments.length === 1) {\n\
+      done = hash\n\
+      hash = this.currentHash\n\
+    }\n\
+    var pref = 'jui.' + hash\n\
+    , name = 'Untitled'\n\
+    try {\n\
+      name = JSON.parse(this.ls[pref]).name\n\
+    } catch (e) {\n\
+      console.error(\"failed to get title\")\n\
+    }\n\
+    done(\n\
+      null,\n\
+      name,\n\
+      {\n\
+        stylus: this.ls[pref + '.stylus'],\n\
+        jade: this.ls[pref + '.jade'],\n\
+        xon: this.ls[pref + '.xon'],\n\
+      },\n\
+      true\n\
+    )\n\
+  },\n\
+  saveName: function (id, name, done) {\n\
+    if (arguments.length === 2) {\n\
+      done = name\n\
+      name = id\n\
+      id = this.currentHash\n\
+    }\n\
+    var pref = 'jui.' + id\n\
+    this.ls[pref] = JSON.stringify({\n\
+      name: name,\n\
+      modified: new Date()\n\
     })\n\
+    done()\n\
   },\n\
-  xon: function (txt, cb) {\n\
-    if (arguments.length === 0) return this.data.xon\n\
-    if (cb) this.fetcher = cb\n\
-    if (!txt && cb) {\n\
-      if (this.lastXon) return cb(this.lastXon, true)\n\
-      txt = this.data.xon\n\
+  // done(err)\n\
+  save: function (id, name, data, done) {\n\
+    if (arguments.length === 3) {\n\
+      done = data\n\
+      data = name\n\
+      name = id\n\
+      id = this.currentHash\n\
     }\n\
-    var data\n\
+    var pref = 'jui.' + id\n\
+    this.ls[pref] = JSON.stringify({\n\
+      name: name,\n\
+      modified: new Date()\n\
+    })\n\
+    this.ls[pref + '.stylus'] = data.stylus\n\
+    this.ls[pref + '.jade'] = data.jade\n\
+    this.ls[pref + '.xon'] = data.xon\n\
+    done(null)\n\
+  },\n\
+  // type is one of stylus, jade, xon\n\
+  saveOne: function (id, type, txt, done) {\n\
+    if (arguments.length === 3) {\n\
+      done = txt\n\
+      txt = type\n\
+      type = id\n\
+      id = this.currentHash\n\
+    }\n\
+    var pref = 'jui.' + id\n\
+    this.ls[pref + '.' + type] = txt\n\
+    var data = {\n\
+      name: 'Untitled'\n\
+    }\n\
     try {\n\
-      data = compileXon(txt)\n\
+      data = JSON.parse(this.ls['jui.' + id])\n\
     } catch (e) {\n\
-      return\n\
+      console.error('Not yet saved')\n\
     }\n\
-    this.data.xon = txt\n\
-    this.lastXon = data\n\
-    if (this.fetcher) {\n\
-      this.fetcher(data, !!cb)\n\
-    }\n\
+    this.ls['jui.' + id] = JSON.stringify({\n\
+      name: data.name,\n\
+      modified: new Date().getTime()\n\
+    })\n\
+    done(null)\n\
   }\n\
 }\n\
-//@ sourceURL=jazzui/client/manager.js"
+//@ sourceURL=jazzui/client/store.js"
+));
+require.register("jazzui/client/tpls.js", Function("exports, require, module",
+"\n\
+module.exports = {\n\
+  jade: require('./tpl/jade.txt'),\n\
+  stylus: require('./tpl/stylus.txt'),\n\
+  xon: require('./tpl/xon.txt'),\n\
+  outjade: require('./tpl/outjade.txt'),\n\
+  outjs: require('./tpl/outjs.txt'),\n\
+  makefile: require('./tpl/makefile.txt'),\n\
+  componentjson: require('./tpl/componentjson.txt'),\n\
+}\n\
+//@ sourceURL=jazzui/client/tpls.js"
 ));
 require.register("jazzui/client/tpl/stylus.txt.js", Function("exports, require, module",
-"module.exports = 'zoom: 80%\\n\
-\\n\
+"module.exports = '\\n\
 .starter-template\\n\
   padding: 40px 15px\\n\
   text-align: center\\n\
@@ -2883,16 +3161,28 @@ require.register("jazzui/client/tpl/jade.txt.js", Function("exports, require, mo
 ';//@ sourceURL=jazzui/client/tpl/jade.txt.js"
 ));
 require.register("jazzui/client/tpl/xon.txt.js", Function("exports, require, module",
-"module.exports = '\\n\
-return {\\n\
-  people: x.some(3, 10, {\\n\
-    name: x.fullName(),\\n\
-    age: x.randInt(21, 45),\\n\
-    status: x.choice([\\'new\\', \\'old\\', \\'middling\\']),\\n\
-    picture: x.image(46, 46)\\n\
-  })\\n\
+"module.exports = 'var x = require(\\'xon\\')\\n\
+\\n\
+module.exports = {\\n\
+  getData: getData,\\n\
+  init: init\\n\
 }\\n\
 \\n\
+function getData(cb) {\\n\
+  cb(null, x({\\n\
+    // Mess with the fixtures here\\n\
+    people: x.some(3, 10, {\\n\
+      name: x.fullName(),\\n\
+      age: x.randInt(21, 45),\\n\
+      status: x.choice([\\'new\\', \\'old\\', \\'middling\\']),\\n\
+      picture: x.image(46, 46)\\n\
+    })\\n\
+  }), true)\\n\
+}\\n\
+\\n\
+function init($scope, app) {\\n\
+  // deal with it\\n\
+}\\n\
 ';//@ sourceURL=jazzui/client/tpl/xon.txt.js"
 ));
 require.register("jazzui/client/tpl/makefile.txt.js", Function("exports, require, module",
@@ -2949,28 +3239,28 @@ require.register("jazzui/client/tpl/componentjson.txt.js", Function("exports, re
 ));
 require.register("jazzui/client/tpl/outjs.txt.js", Function("exports, require, module",
 "module.exports = 'var x = require(\\'xon\\')\\n\
+  , proto = require(\\'./proto\\')\\n\
 \\n\
-angular.module(\\'MyApp\\', [])\\n\
-  .factory(\\'getData\\', function () {\\n\
-     return function (cb) {\\n\
-       return cb(x((function () {\\n\
-         /** INJECT **/\\n\
-       })()), true)\\n\
-     }\\n\
-  })\\n\
-  .controller(\\'MainController\\', [\\'$scope\\', \\'getData\\', function ($scope, getData) {\\n\
-    getData(function (data, cached) {\\n\
-      for (var name in data) {\\n\
-        if (!name.match(/^[a-zA-Z0-9_-]+$/)) continue;\\n\
-        $scope[name] = data[name]\\n\
-      }\\n\
-      if (!cached) $scope.$digest()\\n\
+module.exports = function (angular) {\\n\
+  var AppName = \\'MyApp\\'\\n\
+  var app = angular.module(AppName, [])\\n\
+    .factory(\\'getData\\', function () {\\n\
+      return proto.getData\\n\
     })\\n\
-  }])\\n\
+    .controller(\\'MainController\\', [\\'$scope\\', \\'getData\\', function ($scope, getData) {\\n\
+      $scope.loadingData = true\\n\
+      getData(function (err, data, cached) {\\n\
+        $scope.loadingData = false\\n\
+        for (var name in data) {\\n\
+          if (!name.match(/^[a-zA-Z0-9_-]+$/)) continue;\\n\
+          $scope[name] = data[name]\\n\
+        }\\n\
+        proto.init($scope, app)\\n\
+        if (!cached) $scope.$digest()\\n\
+      })\\n\
+    }])\\n\
 \\n\
-module.exports = function (document) {\\n\
-  var el = document.getElementById(\\'main\\')\\n\
-  angular.bootstrap(el, [\\'MyApp\\'])\\n\
+  return AppName\\n\
 }\\n\
 ';//@ sourceURL=jazzui/client/tpl/outjs.txt.js"
 ));
@@ -2992,9 +3282,22 @@ html\\n\
         require(\\'prototype\\')(document)\\n\
       })\\n\
   body\\n\
-    /** INJECT **/\\n\
+    include proto.jade\\n\
 ';//@ sourceURL=jazzui/client/tpl/outjade.txt.js"
 ));
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
