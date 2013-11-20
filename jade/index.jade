@@ -44,28 +44,33 @@ html
           .btn(ng-click="duplicate()", data-toggle='tooltip', title='Duplicate this prototype')
             i.glyphicon.glyphicon-edit
           input(ng-model="docTitle")
-          .btn(ng-click="toggleFullScreen()", data-toggle='tooltip',
-               title='View the Prototype Full-Screen')
-            i(class="glyphicon {{ fullScreen ? 'glyphicon-resize-small' : 'glyphicon-fullscreen' }}")
           span.zoom-ctrl(ng-hide='fullScreen')
             .btn(ng-click="zoomIn()", data-toggle='tooltip', title='Zoom In')
               i.glyphicon.glyphicon-zoom-in
             span.zoomLevel {{ zoomLevel }}%
             .btn(ng-click="zoomOut()", data-toggle='tooltip', title='Zoom Out')
               i.glyphicon.glyphicon-zoom-out
+        .btn(ng-click="toggleFullScreen()", data-toggle='tooltip',
+             title='View the Prototype Full-Screen')
+          i(class="glyphicon {{ fullScreen ? 'glyphicon-resize-small' : 'glyphicon-fullscreen' }}")
         .btn.minimize(ng-click="toggleMinimized()", data-toggle='tooltip', title='Minimize', ng-show='fullScreen')
           i.glyphicon.glyphicon-arrow-down(ng-class="{ minimized : 'minimized' }")
       .open-back(ng-show='showOpenDialog', ng-click='closeOpenDialog()')
       .open-dialog(ng-show='showOpenDialog')
         button.btn.btn-default.close-btn.pull-right(ng-click='closeOpenDialog()') &times;
         h4 Select a Document to Open
-        ul
-          li(ng-repeat="doc in docs", ng-click="openDoc(doc)")
-            .pull-right.delete-btn(ng-click="removeDoc(doc)") &times;
-            strong.name {{ doc.name }}
-            em.date {{ doc.modified.toLocaleString() }}
-            em.hash {{ doc.hash }}
-          li(ng-hide="docs.length") No documents saved on this browser
+        table
+          tr(ng-repeat="doc in docs | orderBy:getModifiedTime:true", ng-click="openDoc(doc)")
+            td
+              strong.name {{ doc.name }}
+            td
+              em.date {{ doc.modified.toLocaleString() }}
+            td
+              em.hash {{ doc.hash }}
+            td
+              .delete-btn(ng-click="removeDoc(doc)") &times;
+          tr(ng-hide="docs.length")
+            td(colspan=4) No documents saved on this browser
       .dl-back(ng-show='showDlDialog', ng-click='closeDlDialog()')
       .dl-dialog(ng-show='showDlDialog')
         button.btn.btn-default.close-btn.pull-right(ng-click='closeDlDialog()') &times;

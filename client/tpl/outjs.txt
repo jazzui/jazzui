@@ -1,36 +1,23 @@
 var x = require('xon')
+  , proto = require('./proto')
 
 module.exports = function (angular) {
   var AppName = 'MyApp'
-  angular.module(AppName, [])
+  var app = angular.module(AppName, [])
     .factory('getData', function () {
-      return function (cb) {
-
-
-        // Mess with the fixtures here
-        var fixtures = {
-          people: x.some(3, 10, {
-            name: x.fullName(),
-            age: x.randInt(21, 45),
-            status: x.choice(['new', 'old', 'middling']),
-            picture: x.image(46, 46)
-          })
-        }
-
-
-        return cb(x(fixtures), true)
-      }
+      return proto.getData
     })
     .controller('MainController', ['$scope', 'getData', function ($scope, getData) {
-      getData(function (data, cached) {
+      $scope.loadingData = true
+      getData(function (err, data, cached) {
+        $scope.loadingData = false
         for (var name in data) {
           if (!name.match(/^[a-zA-Z0-9_-]+$/)) continue;
           $scope[name] = data[name]
         }
+        proto.init($scope, app)
         if (!cached) $scope.$digest()
       })
-  
-      // If you want more control / to do fancy stuff, you've got it here.
     }])
 
   return AppName

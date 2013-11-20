@@ -1,158 +1,157 @@
+/* globals angular: true, window: true, document: true */
 
 var xon = require('xon')
   , Tip = require('tip')
 
   , Manager = require('./manager')
+  , LocalStore = require('./store').LocalStore
 
-  , tpls = {
-      jade: require('./tpl/jade.txt'),
-      stylus: require('./tpl/stylus.txt'),
-      xon: require('./tpl/xon.txt'),
-      outjade: require('./tpl/outjade.txt'),
-      outjs: require('./tpl/outjs.txt'),
-      makefile: require('./tpl/makefile.txt'),
-      componentjson: require('./tpl/componentjson.txt'),
+  , tpls = require('./tpls')
+  , utils = require('./utils')
+
+
+angular.module('helpers', []).factory('manager', function () {
+  return new Manager(document)
+}).directive("toggle", function() {
+  return {
+    restrict: "A",
+    link: function(scope, element, attrs) {
+      if (attrs.toggle.indexOf('tooltip') !== 0) return;
+      var tip
+      , direction = attrs.toggle.split('-')[1] || undefined
+      setTimeout(function() {
+        tip = utils.tipMe(element[0], element.attr('title'), direction)
+      }, 0);
+      attrs.$observe('title', function () {
+        if (tip) tip.message(element.attr('title'))
+      });
+      scope.$on('$destroy', function () {
+        tip.hide()
+      });
     }
+  };
+})
 
-function debounce(fn, num) {
-  num = num || 300
-  var id
-  return function () {
-    var args = arguments
-      , self = this
-    if (id) clearTimeout(id)
-    id = setTimeout(function () {
-      fn.apply(self, args)
-    }, num)
-  }
-}
+function MainController (manager, $scope, store) {
+  // $scope.docTitle = 'Untitled'
+  $scope.zoomLevel = 80;
 
-function genId(){
-  var id = ''
-    , chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  for (var i=0; i<10; i++) {
-    id += chars[parseInt(Math.random() * 62, 10)]
-  }
-  return id
-}
+  var hash = utils.initHash(window.location.hash)
+  store.currentHash = hash
 
-function tipMe(el, title, direction) {
-  var tip =  new Tip(title)
-  if (direction) {
-    tip.position(direction, {auto: false})
-  }
-  el.addEventListener('mouseover', function () {
-    tip.show(el)
-  })
-  el.addEventListener('mouseout', function () {
-    tip.hide()
-  })
-  return tip
-}
-
-function getDocs() {
-  var docs = []
-    , doc
-  for (var name in window.localStorage) {
-    if (name.slice(0, 'jui.'.length) !== 'jui.') continue;
-    if (name.split('.').length > 2) continue;
-    try {
-      doc = JSON.parse(window.localStorage[name])
-      doc.modified = new Date(doc.modified)
-      doc.hash = name.slice('jui.'.length)
-      docs.push(doc)
-    } catch (e) {
-      console.error("failed to parse", name)
-    }
-  }
-  return docs
-}
-
-module.exports = function (document, window) {
-  var CodeMirror = window.CodeMirror
-    , angular = window.angular
-    , stylus = window.stylus
-    , jade = window.jade
-    , els = {}
-    , reTitle
-    , hash
-
-  if (!window.location.hash) {
-    hash = genId()
-  } else {
-    if (!window.location.hash.match(/^#[a-zA-Z0-9]{10}/)) {
-      alert("Sorry, file not found. Please check your url")
-      return window.location = '/'
-    }
-    hash = window.location.hash.slice(1)
+  function load(hash) {
+    $scope.loading = true
+    store.get(hash, function (err, title, data, cached) {
+      $scope.loading = false
+      mirrors.stylus.setValue(data.stylus || tpls.stylus)
+      mirrors.jade.setValue(data.jade || tpls.jade)
+      mirrors.xon.setValue(data.xon || tpls.xon)
+      $scope.docTitle = title || 'Untitled'
+      if (!cached) $scope.$digest()
+    })
   }
 
   window.addEventListener('hashchange', function () {
     if ('#' + hash == window.location.hash) return
-    if (!window.location.hash || window.location.hash == '#') {
-      hash = genId()
-    } else if (!window.location.hash.match(/^#[a-zA-Z0-9]{10}/)) {
-      alert("Sorry, file not found. Please check your url")
-      return
-    } else {
-      hash = window.location.hash.slice(1)
+    hash = utils.initHash(window.location.hash)
+    store.currentHash = hash
+    load(hash)
+    $scope.$digest()
+  })
+
+  manager.zoomIt = function (el) {
+    el.style.zoom = $scope.zoomLevel + '%';
+  }
+
+  $scope.$watch('docTitle', utils.debounce(function (value, prev) {
+    if (!value) return
+    // if (!prev && value === 'Untitled') return
+    var data = {
+      modified: new Date()
     }
-    if (reTitle) reTitle()
+    store.saveName(hash, value, function (err) {
+      window.location.hash = hash
+    })
+  }))
 
-    mirrors.jade.setValue(window.localStorage['jui.' + hash + '.jade'] || tpls.jade)
-    mirrors.stylus.setValue(window.localStorage['jui.' + hash + '.stylus'] || tpls.stylus)
-    mirrors.xon.setValue(window.localStorage['jui.' + hash + '.xon'] || tpls.xon)
-  })
+  $scope.getModifiedTime = function (doc) {
+    return doc.modified.getTime()
+  }
 
-  ;['jade-mirror',
-    'stylus-mirror',
-    'xon-mirror'].map(function (id) {
-    els[id] = document.getElementById(id)
-  })
+  $scope.download = function () {
+    var blob = utils.createZip(tpls, mirrors)
+    document.getElementById('download-link').href = window.URL.createObjectURL(blob);
+    $scope.showDlDialog = true
+  }
+  $scope.closeDlDialog = function () {
+    $scope.showDlDialog = false
+  }
+  $scope.open = function () {
+    store.list(function (err, docs, cached) {
+      $scope.docs = docs
+      if (!cached) $scope.$digest()
+    })
+    $scope.showOpenDialog = true
+  }
+  $scope.openDoc = function (doc) {
+    window.location.hash = doc.hash
+    $scope.showOpenDialog = false
+  }
+  $scope.removeDoc = function (doc) {
+    store.remove(doc.hash, function (err, docs, cached) {
+      $scope.docs = docs
+      if (!cached) $scope.$digest()
+    })
+  }
+  $scope.closeOpenDialog = function () {
+    $scope.showOpenDialog = false
+  }
+
+  $scope.duplicate = function () {
+    var id = utils.genId()
+    store.save(
+      id,
+      $scope.docTitle,
+      {
+        stylus: mirrors.stylus.getValue(),
+        jade: mirrors.jade.getValue(),
+        xon: mirrors.xon.getValue()
+      },
+      function () {}
+    )
+    window.location.hash = id
+  }
   
-  var manager = new Manager(document)
+  $scope.zoomIn = function () {
+    if ($scope.zoomLevel < 250) {
+      $scope.zoomLevel += 10;
+    }
+  }
 
-  function makeMirror(name, el, txt, mode, onChange) {
-    txt = window.localStorage['jui.' + hash + '.' + name] || txt
-    var m = new CodeMirror(el, {
-      value: txt,
-      mode: mode,
-      theme: 'twilight',
-      extraKeys: {
-        Tab: function(cm) {
-          var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
-          cm.replaceSelection(spaces, "end", "+input");
-        }
-      }
-    })
-    var reloading = true
-    var reload = document.querySelector('.' + name + ' > .reload-btn')
-    var tip = tipMe(reload, 'Click to disable automatic reload')
-    // tip.position('south')
-    reload.addEventListener('click', function () {
-      reloading = !reloading
-      tip.message('Click to ' + (reloading ? 'dis' : 'en') + 'able automatic reload')
-      reload.classList[reloading ? 'add' : 'remove']('active')
-    })
-    m.on('change', debounce(function (instance, change) {
-      if (window.location.hash != '#' + hash && instance.doc.getValue() !== tpls[name]) {
-        window.location.hash = hash
-      }
-      window.localStorage['jui.' + hash + '.' + name] = instance.doc.getValue()
-      var data = {
-        name: 'Untitled'
-      }
-      try {
-        data = JSON.parse(window.localStorage['jui.' + hash])
-      } catch (e) {}
-      window.localStorage['jui.' + hash] = JSON.stringify({
-        name: data.name,
-        modified: new Date().getTime()
-      })
-      if (reloading) onChange(instance.doc.getValue())
-    }))
-    onChange(txt)
-    return m
+  $scope.zoomOut = function () {
+    if ($scope.zoomLevel > 20) {
+      $scope.zoomLevel -= 10;
+    }
+  }
+
+  var outputEl = document.getElementById('output')
+  $scope.fullScreen = false
+  $scope.$watch('zoomLevel', function (value) {
+    manager.els.output.style.zoom = value + '%';
+  })
+  $scope.$watch('fullScreen', function (value) {
+    if (value) manager.els.output.classList.add('fullScreen')
+    else manager.els.output.classList.remove('fullScreen')
+  })
+  $scope.toggleFullScreen = function () {
+    $scope.fullScreen = !$scope.fullScreen
+    if (!$scope.fullScreen) {
+      $scope.minimized = false
+    }
+  }
+  $scope.minimized = false
+  $scope.toggleMinimized = function () {
+    $scope.minimized = !$scope.minimized
   }
 
   var mirrors = {}
@@ -163,150 +162,33 @@ module.exports = function (document, window) {
         xon: 'javascript'
       }
 
-  var myApp = angular.module('MyApp', [])
-    .controller('MainController', ['$scope', function ($scope) {
-      $scope.loadingData = true
-      manager.xon(null, $scope, myApp)
-    }])
-
-  var app = angular.module('JazzUI', [])
-  app.controller('MainController', ['$scope', function ($scope) {
-    $scope.docTitle = 'Untitled'
-    $scope.zoomLevel = 80;
-
-    manager.zoomIt = function (el) {
-      el.style.zoom = $scope.zoomLevel + '%';
-    }
-    
-    reTitle = function (norefresh) {
-      try {
-        $scope.docTitle = JSON.parse(window.localStorage['jui.' + hash]).name
-      } catch (e) {}
-      if (!norefresh) $scope.$digest()
-    }
-    reTitle(true)
-    $scope.$watch('docTitle', function (value, prev) {
-      var data = {
-        modified: new Date()
-      }
-      try {
-        data = JSON.parse(window.localStorage['jui.' + hash])
-      } catch (e) {}
-      data.name = value
-      window.localStorage['jui.' + hash] = JSON.stringify(data)
-    })
-
-    $scope.download = function () {
-      var zip = new JSZip()
-        , main = zip.folder('prototype')
-        , jsf = main.folder("js")
-        , cssf = main.folder("css")
-        , stylf = main.folder("styl")
-        , jadef = main.folder("jade")
-
-      main.file('component.json', tpls.componentjson)
-      main.file('Makefile', tpls.makefile)
-      jadef.file('index.jade', tpls.outjade)
-      jadef.file('proto.jade', mirrors.jade.getValue())
-      stylf.file('index.styl', 'body\n  @import "proto.styl"\n')
-      stylf.file('proto.styl', mirrors.stylus.getValue())
-      main.file('index.js', mirrors.xon.getValue())
-
-      var blob = zip.generate({ type: 'blob' })
-      document.getElementById('download-link').href = window.URL.createObjectURL(blob);
-      $scope.showDlDialog = true
-    }
-    $scope.closeDlDialog = function () {
-      $scope.showDlDialog = false
-    }
-    $scope.open = function () {
-      $scope.docs = getDocs()
-      $scope.showOpenDialog = true
-    }
-    $scope.openDoc = function (doc) {
-      window.location.hash = doc.hash
-      $scope.showOpenDialog = false
-    }
-    $scope.removeDoc = function (doc) {
-      var names = Object.keys(window.localStorage)
-      for (var i=0; i<names.length; i++) {
-        if (names[i].indexOf('jui.' + doc.hash) === 0) {
-          window.localStorage.removeItem(names[i])
-        }
-      }
-      $scope.docs = getDocs()
-    }
-    $scope.closeOpenDialog = function () {
-      $scope.showOpenDialog = false
-    }
-
-    $scope.duplicate = function () {
-      var id = genId()
-        , pref = 'jui.' + id
-      window.localStorage[pref] = window.localStorage[hash]
-      window.localStorage[pref + '.jade'] = mirrors.jade.getValue()
-      window.localStorage[pref + '.stylus'] = mirrors.stylus.getValue()
-      window.localStorage[pref + '.xon'] = mirrors.xon.getValue()
-      window.location.hash = id
-    }
-    
-    $scope.zoomIn = function () {
-      if ($scope.zoomLevel < 250) {
-        $scope.zoomLevel += 10;
-      }
-    }
-
-    $scope.zoomOut = function () {
-      if ($scope.zoomLevel > 20) {
-        $scope.zoomLevel -= 10;
-      }
-    }
-
-    var outputEl = document.getElementById('output')
-    $scope.fullScreen = false
-    $scope.$watch('zoomLevel', function (value) {
-      manager.els.output.style.zoom = value + '%';
-    })
-    $scope.$watch('fullScreen', function (value) {
-      if (value) manager.els.output.classList.add('fullScreen')
-      else manager.els.output.classList.remove('fullScreen')
-    })
-    $scope.toggleFullScreen = function () {
-      $scope.fullScreen = !$scope.fullScreen
-    }
-    $scope.minimized = false
-    $scope.toggleMinimized = function () {
-      $scope.minimized = !$scope.minimized
-    }
-
-    
-  }]).directive("toggle", function() {
-    return {
-      restrict: "A",
-      link: function(scope, element, attrs) {
-        if (attrs.toggle.indexOf('tooltip') !== 0) return;
-        var tip
-          , direction = attrs.toggle.split('-')[1] || undefined
-        setTimeout(function() {
-          tip = tipMe(element[0], element.attr('title'), direction)
-        }, 0);
-        attrs.$observe('title', function () {
-          if (tip) tip.message(element.attr('title'))
-        });
-        scope.$on('$destroy', function () {
-          tip.hide()
-        });
-      }
-    };
-  })
-
   langs.forEach(function (lang) {
-    mirrors[lang] = makeMirror(
-      lang, els[lang + '-mirror'], tpls[lang],
-      cmLangs[lang], manager[lang].bind(manager)
+    mirrors[lang] = utils.makeMirror(
+      lang, document.getElementById(lang + '-mirror'),
+      cmLangs[lang], store, manager[lang].bind(manager)
     )
   })
 
+  load(hash)
+
+}
+
+
+module.exports = function (document, window) {
+  var manager = new Manager(document)
+  var app = angular.module('JazzUI', ['helpers'])
+  app.controller('MainController', ['$scope', 'store', MainController.bind(null, manager)])
+
+  var myApp = angular.module('MyApp', [])
+    .controller('MainController', ['$scope', function ($scope) {
+      $scope.loadingData = true
+      console.log('hi', manager)
+      manager.xon(null, $scope, myApp)
+    }])
+
+  app.factory('store', function () {
+    return new LocalStore(window.localStorage)
+  })
   angular.bootstrap(document.getElementById("interaction"), ["JazzUI"])
 
 }

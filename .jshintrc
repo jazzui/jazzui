@@ -2,6 +2,7 @@
   "strict": false,
   "laxcomma": true,
   "undef": true,
+  "unused": true,
   "node": true,
   "-W033": false,
   "-W024": false,

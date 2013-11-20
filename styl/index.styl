@@ -51,7 +51,7 @@
     border-radius: 10px
     padding: 20px 30px
     box-sizing: border-box
-    z-index: 1005
+    z-index: 2004
 
     .close-btn
       line-height: 10px
@@ -66,8 +66,10 @@
         padding: 5px 10px
 
   .open-dialog
-    ul
-      li
+    table
+      padding: 0
+      margin: 0
+      tr
         cursor: pointer
 
         .name
@@ -78,13 +80,12 @@
         .delete-btn
           color: #f00;
           font-weight: bold;
-          line-height: 6px;
-          padding: 12px;
-          margin-top: -5px;
-          margin-right: -10px;
+          line-height: 11px;
+          padding: 9px;
+          margin-left: 3px;
 
           &:hover
-            background-color: #777
+            background-color: #ddd
 
         &:hover
           background-color: #ccc
@@ -102,7 +103,7 @@
     bottom: 0
     left: 0
     right: 0
-    z-index: 1004
+    z-index: 2003
     background-color: #999
     opacity: .5
     cursor: pointer

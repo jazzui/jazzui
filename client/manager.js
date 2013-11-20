@@ -11,7 +11,6 @@ function compileXon(txt) {
     exports: {}
   }
   new Function('require', 'module', txt)(require, module)
-  console.log('got', module)
   return module.exports
 }
 
@@ -41,6 +40,7 @@ Manager.prototype = {
     try {
       html = jade.compile(txt)()
     } catch (e) {
+      console.error("Jade failed to compile")
       return
     }
     this.data.jade = txt
@@ -111,7 +111,7 @@ Manager.prototype = {
     try {
       proto = compileXon(txt)
     } catch (e) {
-      console.log('error!', e)
+      console.log('xon error!', e)
       return false
     }
     if ('function' !== typeof proto.getData || 'function' !== typeof proto.init) {

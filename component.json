@@ -16,6 +16,9 @@
   "scripts": [
     "client/index.js",
     "client/manager.js",
+    "client/utils.js",
+    "client/store.js",
+    "client/tpls.js",
     "client/tpl/stylus.txt.js",
     "client/tpl/jade.txt.js",
     "client/tpl/xon.txt.js",
