@@ -100,7 +100,12 @@ function createZip(tpls, mirrors) {
 }
 
 function makeMirror(name, el, mode, store, onChange) {
-  var m = new CodeMirror(el, {
+  var m = ace.edit(el)
+  m.setTheme('ace/theme/twilight')
+  m.getSession().setMode('ace/mode/' + mode)
+  m.setValue('')
+  /*
+  new CodeMirror(el, {
     value: '',
     mode: mode,
     theme: 'twilight',
@@ -111,6 +116,7 @@ function makeMirror(name, el, mode, store, onChange) {
       }
     }
   })
+  */
   var reloading = true
   var reload = document.querySelector('.' + name + ' > .reload-btn')
   var tip = tipMe(reload, 'Click to disable automatic reload')
@@ -127,8 +133,8 @@ function makeMirror(name, el, mode, store, onChange) {
       }
     })
   }, 2000)
-  m.on('change', debounce(function (instance, change) {
-    var text = instance.doc.getValue()
+  m.on('change', debounce(function (change) {
+    var text = m.getValue()
     if (reloading) onChange(text)
     saveBouncer(text)
   }))

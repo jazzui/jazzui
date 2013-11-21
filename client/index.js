@@ -2,6 +2,7 @@
 
 var xon = require('xon')
   , Tip = require('tip')
+  , Slider = require('slider')
 
   , Manager = require('./manager')
   , LocalStore = require('./store').LocalStore
@@ -158,7 +159,7 @@ function MainController (manager, $scope, store) {
     , langs = ['jade', 'stylus', 'xon']
     , cmLangs = {
         jade: 'jade',
-        stylus: 'jade',
+        stylus: 'stylus',
         xon: 'javascript'
       }
 
@@ -169,8 +170,25 @@ function MainController (manager, $scope, store) {
     )
   })
 
+  configureStylus(mirrors.stylus)
+
   load(hash)
 
+}
+
+function configureStylus(editor) {
+  var el = document.getElementById('stylus-mirror')
+  el.addEventListener('click', function (e) {
+    if (!e.target.classList.contains('ace_numeric')) return
+    var s = new Slider
+    s.show(e.target)
+    function remove() {
+      window.removeEventListener('mousedown', remove)
+      s.hide()
+      s.destroy()
+    }
+    window.addEventListener('mousedown', remove)
+  })
 }
 
 
