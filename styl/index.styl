@@ -111,13 +111,12 @@
   .floater
     position: fixed
     bottom: 0
-    left: 50%
-    margin-left: -300px
-    width: 600px
+    left: 0
+    right: 0
+    height: 30px
     text-align: center
     z-index: 2001
     background-color: #333
-    border-radius: 5px
     color: #ddd
 
     .minimize
@@ -133,8 +132,11 @@
         -webkit-transform: rotate(135deg)
 
     &.fullScreen
+      border-radius: 5px
       width: 520px
       margin-left: -260px
+      left: 50%
+      right: auto
     
       &.minimized
         left: auto
@@ -172,7 +174,7 @@
   top: 0
   left: 0
   right: 0
-  bottom: 0
+  bottom: 30px
 
   .mirror
     width: 100%

@@ -5,10 +5,11 @@
   "version": "0.0.1",
   "keywords": [],
   "dependencies": {
-    "visionmedia/jade": "*",
-    "jaredly/xon": "*",
-    "component/tip": "*",
     "component/aurora-tip": "*",
+    "visionmedia/jade": "*",
+    "component/tip": "*",
+    "jaredly/xon": "*",
+    "jazzui/ace-slider": "*",
     "jazzui/slider": "*"
   },
   "development": {},

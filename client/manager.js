@@ -1,5 +1,5 @@
 
-/* globals stylus: true, jade: true, angular: true */
+/* globals less: true, jade: true, angular: true */
 
 var xon = require('xon')
 
@@ -18,7 +18,7 @@ function Manager(document){
   var els = {}
     , data = {
         js: '',
-        styl: '',
+        less: '',
         xon: '',
         jade: ''
       }
@@ -48,13 +48,14 @@ Manager.prototype = {
     angular.bootstrap((this.els.output = parent.firstChild), ['MyApp'])
     if (this.zoomIt) this.zoomIt(this.els.output)
   },
-  stylus: function (txt) {
+  less: function (txt) {
     var self = this
-    txt = '#output\n  ' + txt.replace(/\n/g,'\n  ')
-    stylus(txt).render(function (err, css) {
-      if (!css) return
-      self.data.styl = txt
-      self.els['injected-css'].innerHTML = css
+    txt = '#output {  ' + txt.replace(/\n/g,'\n  ') + ' }'
+    var p = new less.Parser()
+    p.parse(txt, function (err, tree) {
+      if (err) return
+      self.data.less = txt
+      self.els['injected-css'].innerHTML = tree.toCSS()
     })
   },
   updateXon: function (proto, cached) {

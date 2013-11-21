@@ -44,8 +44,8 @@ function MainController (manager, $scope, store) {
     $scope.loading = true
     store.get(hash, function (err, title, data, cached) {
       $scope.loading = false
-      mirrors.stylus.setValue(data.stylus || tpls.stylus)
-      mirrors.stylus.clearSelection()
+      mirrors.less.setValue(data.less || tpls.less)
+      mirrors.less.clearSelection()
       mirrors.jade.setValue(data.jade || tpls.jade)
       mirrors.jade.clearSelection()
       mirrors.xon.setValue(data.xon || tpls.xon)
@@ -117,7 +117,7 @@ function MainController (manager, $scope, store) {
       id,
       $scope.docTitle,
       {
-        stylus: mirrors.stylus.getValue(),
+        less: mirrors.less.getValue(),
         jade: mirrors.jade.getValue(),
         xon: mirrors.xon.getValue()
       },
@@ -159,10 +159,10 @@ function MainController (manager, $scope, store) {
   }
 
   var mirrors = {}
-    , langs = ['jade', 'stylus', 'xon']
+    , langs = ['jade', 'less', 'xon']
     , cmLangs = {
         jade: 'jade',
-        stylus: 'stylus',
+        less: 'less',
         xon: 'javascript'
       }
 
@@ -175,30 +175,15 @@ function MainController (manager, $scope, store) {
 
   window.mirrors = mirrors
 
-  configureStylus(mirrors.stylus)
+  configureLess(mirrors.less, document.getElementById('less-mirror'))
 
   load(hash)
 
 }
 
-function configureStylus(editor) {
-  editor.getSession().selection.on('changeSelection', function (e) {
-    console.log('change', this, e)
-  })
-  var el = document.getElementById('stylus-mirror')
-  el.addEventListener('click', function (e) {
-    if (!e.target.classList.contains('ace_numeric')) return
-    var s = new Slider
-    s.show(e.target)
-    function remove() {
-      window.removeEventListener('mousedown', remove)
-      s.hide()
-      s.destroy()
-    }
-    window.addEventListener('mousedown', remove)
-  })
+function configureLess(editor, el) {
+  require('ace-slider')(editor, el)
 }
-
 
 module.exports = function (document, window) {
   var manager = new Manager(document)

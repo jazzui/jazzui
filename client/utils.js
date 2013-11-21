@@ -1,4 +1,4 @@
-/* globals alert: true, CodeMirror: true, JSZip: true, window: true, document: true */
+/* globals alert: true, ace: true, JSZip: true, window: true, document: true */
 
 var Tip = require('tip')
 
@@ -92,8 +92,8 @@ function createZip(tpls, mirrors) {
   main.file('Makefile', tpls.makefile)
   jadef.file('index.jade', tpls.outjade)
   jadef.file('proto.jade', mirrors.jade.getValue())
-  stylf.file('index.styl', 'body\n  @import "proto.styl"\n')
-  stylf.file('proto.styl', mirrors.stylus.getValue())
+  stylf.file('index.less', 'body { @import "proto.less"; }')
+  stylf.file('proto.less', mirrors.less.getValue())
   main.file('index.js', mirrors.xon.getValue())
 
   return zip.generate({ type: 'blob' })

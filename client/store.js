@@ -45,7 +45,7 @@ LocalStore.prototype = {
     }
     this.list(done)
   },
-  // {hash:, name:, jade:, stylus:, xon:, modified:}
+  // {hash:, name:, jade:, less:, xon:, modified:}
   get: function (hash, done) {
     if (arguments.length === 1) {
       done = hash
@@ -62,7 +62,7 @@ LocalStore.prototype = {
       null,
       name,
       {
-        stylus: this.ls[pref + '.stylus'],
+        less: this.ls[pref + '.less'],
         jade: this.ls[pref + '.jade'],
         xon: this.ls[pref + '.xon'],
       },
@@ -95,12 +95,12 @@ LocalStore.prototype = {
       name: name,
       modified: new Date()
     })
-    this.ls[pref + '.stylus'] = data.stylus
+    this.ls[pref + '.less'] = data.less
     this.ls[pref + '.jade'] = data.jade
     this.ls[pref + '.xon'] = data.xon
     done(null)
   },
-  // type is one of stylus, jade, xon
+  // type is one of less, jade, xon
   saveOne: function (id, type, txt, done) {
     if (arguments.length === 3) {
       done = txt
