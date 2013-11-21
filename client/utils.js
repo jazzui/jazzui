@@ -104,6 +104,7 @@ function makeMirror(name, el, mode, store, onChange) {
   m.setTheme('ace/theme/twilight')
   m.getSession().setMode('ace/mode/' + mode)
   m.setValue('')
+  m.clearSelection()
   /*
   new CodeMirror(el, {
     value: '',

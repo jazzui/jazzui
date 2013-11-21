@@ -45,8 +45,11 @@ function MainController (manager, $scope, store) {
     store.get(hash, function (err, title, data, cached) {
       $scope.loading = false
       mirrors.stylus.setValue(data.stylus || tpls.stylus)
+      mirrors.stylus.clearSelection()
       mirrors.jade.setValue(data.jade || tpls.jade)
+      mirrors.jade.clearSelection()
       mirrors.xon.setValue(data.xon || tpls.xon)
+      mirrors.xon.clearSelection()
       $scope.docTitle = title || 'Untitled'
       if (!cached) $scope.$digest()
     })
@@ -170,6 +173,8 @@ function MainController (manager, $scope, store) {
     )
   })
 
+  window.mirrors = mirrors
+
   configureStylus(mirrors.stylus)
 
   load(hash)
@@ -177,6 +182,9 @@ function MainController (manager, $scope, store) {
 }
 
 function configureStylus(editor) {
+  editor.getSession().selection.on('changeSelection', function (e) {
+    console.log('change', this, e)
+  })
   var el = document.getElementById('stylus-mirror')
   el.addEventListener('click', function (e) {
     if (!e.target.classList.contains('ace_numeric')) return
@@ -208,5 +216,7 @@ module.exports = function (document, window) {
     return new LocalStore(window.localStorage)
   })
   angular.bootstrap(document.getElementById("interaction"), ["JazzUI"])
+
+  window.manager = manager
 
 }

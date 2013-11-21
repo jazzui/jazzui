@@ -10,12 +10,13 @@ web/index.html: jade/index.jade
 	@jade jade/index.jade -o web
 
 web/ace:
-	@mkdir -p tmp-ace && cd tmp-ace
-	@wget https://github.com/ajaxorg/ace-builds/archive/master.zip
-	@unzip master.zip
-	@mv src-noconflict ../web/ace
-	@cd ..
-	@rm -rf tmp-ace
+	@mkdir -p tmp-ace;\
+		cd tmp-ace;\
+	    wget https://github.com/ajaxorg/ace-builds/archive/master.zip;\
+	    unzip master.zip;\
+	    mv ace-builds-master/src-noconflict ../web/ace;\
+	    cd ..;\
+	    rm -rf tmp-ace
 
 TPLS := $(patsubst client/tpl/%.txt,client/tpl/%.txt.js,$(wildcard client/tpl/*.txt))
 

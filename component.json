@@ -8,7 +8,8 @@
     "visionmedia/jade": "*",
     "jaredly/xon": "*",
     "component/tip": "*",
-    "component/aurora-tip": "*"
+    "component/aurora-tip": "*",
+    "jazzui/slider": "*"
   },
   "development": {},
   "license": "MIT",
