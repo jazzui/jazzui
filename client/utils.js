@@ -139,6 +139,7 @@ function makeMirror(name, el, mode, store, onChange) {
     if (reloading) onChange(text)
     saveBouncer(text)
   }))
+  m.getSession().setTabSize(2)
   return m
 }
 

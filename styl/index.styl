@@ -22,12 +22,16 @@
   position: relative
 
 #output
-  position: relative
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
   overflow: auto
   background-color: white
 
   &.fullScreen
-    position: absolute
+    position: fixed
     top: 0
     left: 0
     right: 0
@@ -210,4 +214,5 @@
       box-sizing: border-box
       border: 1px solid black
       flex-direction: column
+      position: relative
 
