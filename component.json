@@ -21,7 +21,7 @@
     "client/utils.js",
     "client/store.js",
     "client/tpls.js",
-    "client/tpl/stylus.txt.js",
+    "client/tpl/less.txt.js",
     "client/tpl/jade.txt.js",
     "client/tpl/xon.txt.js",
     "client/tpl/makefile.txt.js",

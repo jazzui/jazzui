@@ -1,7 +1,7 @@
 
 module.exports = {
   jade: require('./tpl/jade.txt'),
-  stylus: require('./tpl/stylus.txt'),
+  less: require('./tpl/less.txt'),
   xon: require('./tpl/xon.txt'),
   outjade: require('./tpl/outjade.txt'),
   outjs: require('./tpl/outjs.txt'),
