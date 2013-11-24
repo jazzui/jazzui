@@ -1,7 +1,12 @@
 
 ! "full screen" mode
 ! zoom buttons
-> change export to be re-importable
+! ColorSlider!
+! change export to be re-importable
+
+- colorslider
+  - no 8char hex. switch to rgba.
+  - recognize color names and pop up the picker
 
 - export single html file
 - save to backend (mongodb + nodejs/golang)
