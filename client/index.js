@@ -183,6 +183,7 @@ function MainController (manager, $scope, store) {
 
 function configureLess(editor, el) {
   require('ace-slider')(editor, el)
+  require('ace-colorslider')(editor, el)
 }
 
 module.exports = function (document, window) {
