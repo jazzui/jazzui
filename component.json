@@ -11,7 +11,8 @@
     "jaredly/xon": "*",
     "jazzui/ace-slider": "*",
     "jazzui/ace-colorslider": "*",
-    "jazzui/slider": "*"
+    "jazzui/slider": "*",
+    "visionmedia/superagent": "*"
   },
   "development": {},
   "license": "MIT",

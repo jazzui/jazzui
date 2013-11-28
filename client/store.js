@@ -8,7 +8,8 @@ module.exports = {
 
 function ApiStore(base) {
   this.base = base || '/'
-  throw new Error("Not Implemented")
+  this.onerror = null
+  // throw new Error("Not Implemented")
 }
 
 ApiStore.prototype = {
@@ -18,6 +19,9 @@ ApiStore.prototype = {
       .end(function (res) {
         if (res.status !== 200) {
           return done(new Error(res.text))
+        }
+        for (var i=0; i<res.body.length; i++) {
+          res.body[i].modified = new Date(res.body[i].modified)
         }
         done(null, res.body)
       })
@@ -35,16 +39,22 @@ ApiStore.prototype = {
     request.get(this.base + 'project/' + hash)
       .end(function (res) {
         if (res.status !== 200) {
+          if (res.status === 404) {
+            return done(new Error('Server not running'))
+          }
           return done(new Error(res.text))
         }
-        done(null, res.body.info.name, res.body.docs)
+        done(null, res.body.info && res.body.info.name, res.body.docs)
       })
   },
   put: function (hash, data, done) {
-    request.put(this.base + 'project/' + hash)
+    request.post(this.base + 'project/' + hash)
       .send(data)
       .end(function (res) {
-        if (res.status !== 200) {
+        if (res.status > 299) {
+          if (res.status === 404) {
+            return done(new Error('Server not running'))
+          }
           return done(new Error(res.text))
         }
         done()
@@ -74,7 +84,9 @@ ApiStore.prototype = {
       type = id
       id = this.currentHash
     }
-    this.put(id, {docs: {type: txt}}, done)
+    var doc = {}
+    doc[type] = txt
+    this.put(id, {docs: doc}, done)
   }
 }
 
@@ -123,7 +135,7 @@ LocalStore.prototype = {
       hash = this.currentHash
     }
     var pref = 'jui.' + hash
-    , name = 'Untitled'
+      , name = 'Untitled'
     try {
       name = JSON.parse(this.ls[pref]).name
     } catch (e) {
@@ -169,7 +181,7 @@ LocalStore.prototype = {
     this.ls[pref + '.less'] = data.less
     this.ls[pref + '.jade'] = data.jade
     this.ls[pref + '.xon'] = data.xon
-    done(null)
+    done(null, true)
   },
   // type is one of less, jade, xon
   saveOne: function (id, type, txt, done) {

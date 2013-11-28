@@ -1,12 +1,15 @@
 
 default: manual-build build
 
-manual-build: web/css/index.css web/index.html web/ace
+manual-build: web/css/index.css web/index.html web/online.html web/ace
 
 web/css/index.css: styl/index.styl
 	@stylus < styl/index.styl > web/css/index.css
 
-web/index.html: jade/index.jade
+web/online.html: jade/online.jade jade/*.jade
+	@jade jade/online.jade -o web
+
+web/index.html: jade/index.jade jade/*.jade
 	@jade jade/index.jade -o web
 
 web/ace:

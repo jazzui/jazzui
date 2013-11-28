@@ -6,6 +6,7 @@ var xon = require('xon')
 
   , Manager = require('./manager')
   , LocalStore = require('./store').LocalStore
+  , ApiStore = require('./store').ApiStore
 
   , tpls = require('./tpls')
   , utils = require('./utils')
@@ -43,6 +44,10 @@ function MainController (manager, $scope, store) {
   function load(hash) {
     $scope.loading = true
     store.get(hash, function (err, title, data, cached) {
+      if (err) {
+        $scope.serverError = err.message
+        data = {}
+      }
       $scope.loading = false
       mirrors.less.setValue(data.less || tpls.less)
       mirrors.less.clearSelection()
@@ -92,7 +97,12 @@ function MainController (manager, $scope, store) {
   }
   $scope.open = function () {
     store.list(function (err, docs, cached) {
-      $scope.docs = docs
+      if (err) {
+        $scope.serverError = err.message
+      } else {
+        $scope.serverError = null
+        $scope.docs = docs
+      }
       if (!cached) $scope.$digest()
     })
     $scope.showOpenDialog = true
@@ -103,7 +113,12 @@ function MainController (manager, $scope, store) {
   }
   $scope.removeDoc = function (doc) {
     store.remove(doc.hash, function (err, docs, cached) {
-      $scope.docs = docs
+      if (err) {
+        $scope.serverError = err.message
+      } else {
+        $scope.serverError = null
+        $scope.docs = docs
+      }
       if (!cached) $scope.$digest()
     })
   }
@@ -121,14 +136,25 @@ function MainController (manager, $scope, store) {
         jade: mirrors.jade.getValue(),
         xon: mirrors.xon.getValue()
       },
-      function () {}
+      function (err, cached) {
+        if (err) {
+          $scope.serverError = err.message
+        } else {
+          $scope.serverError = null
+        }
+        if (!cached) $scope.$digest()
+      }
     )
     window.location.hash = id
+  }
+
+  $scope.new = function () {
+    window.location.hash = ''
   }
   
   $scope.zoomIn = function () {
     if ($scope.zoomLevel < 250) {
-      $scope.zoomLevel += 10;
+      $scope.zoomLevel += 10
     }
   }
 
@@ -169,7 +195,9 @@ function MainController (manager, $scope, store) {
   langs.forEach(function (lang) {
     mirrors[lang] = utils.makeMirror(
       lang, document.getElementById(lang + '-mirror'),
-      cmLangs[lang], store, manager[lang].bind(manager)
+      cmLangs[lang], store, manager[lang].bind(manager),
+      function (err) {
+      }
     )
   })
 
@@ -186,7 +214,7 @@ function configureLess(editor, el) {
   require('ace-colorslider')(editor, el)
 }
 
-module.exports = function (document, window) {
+module.exports = function (document, window, server) {
   var manager = new Manager(document)
   var app = angular.module('JazzUI', ['helpers'])
   app.controller('MainController', ['$scope', 'store', MainController.bind(null, manager)])
@@ -198,11 +226,23 @@ module.exports = function (document, window) {
       manager.xon(null, $scope, myApp)
     }])
 
+  var store
+  if (server === true) server = window.location.origin + '/'
+  if (!server) store = new LocalStore(window.localStorage)
+  else store = new ApiStore(server)
+
   app.factory('store', function () {
-    return new LocalStore(window.localStorage)
+    return store
   })
-  angular.bootstrap(document.getElementById("interaction"), ["JazzUI"])
+  
+  // check that our server's functioning
+  store.list(function (err) {
+    if (err) {
+      alert('Server not running; switching to LocalStorage. Documents saved will only be available from this browser.')
+      store = new LocalStore(window.localStorage)
+    }
+    angular.bootstrap(document.getElementById("interaction"), ["JazzUI"])
+  })
 
   window.manager = manager
-
 }

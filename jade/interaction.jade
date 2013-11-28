@@ -1,0 +1,67 @@
+#interaction(ng-controller="MainController", ng-cloak)
+  .floater(ng-class='{fullScreen: fullScreen, minimized: minimized}')
+    span.main-bar(ng-hide='minimized')
+      span.server-error(ng-show='serverError') Error saving: {{ serverError }}
+      a(href="https://github.com/jazzui/jazzui") Jazzui
+      | &nbsp;by&nbsp;
+      a.author-link(href="http://jaredforsyth.com") Jared Forsyth
+      .btn(ng-click="download()", data-toggle='tooltip', title='Download your prototype')
+        i.glyphicon.glyphicon-cloud-download
+      .btn(ng-click="open()", data-toggle='tooltip', title='Open a past prototype')
+        i.glyphicon.glyphicon-folder-open
+      .btn(ng-click="duplicate()", data-toggle='tooltip', title='Duplicate this prototype')
+        i.glyphicon.glyphicon-edit
+      .btn(ng-click="new()", data-toggle='tooltip', title='New Prototype')
+        i.glyphicon.glyphicon-certificate
+      input(ng-model="docTitle")
+      span.zoom-ctrl(ng-hide='fullScreen')
+        .btn(ng-click="zoomIn()", data-toggle='tooltip', title='Zoom In')
+          i.glyphicon.glyphicon-zoom-in
+        span.zoomLevel {{ zoomLevel }}%
+        .btn(ng-click="zoomOut()", data-toggle='tooltip', title='Zoom Out')
+          i.glyphicon.glyphicon-zoom-out
+    .btn(ng-click="toggleFullScreen()", data-toggle='tooltip',
+          title='View the Prototype Full-Screen')
+      i(class="glyphicon {{ fullScreen ? 'glyphicon-resize-small' : 'glyphicon-fullscreen' }}")
+    .btn.minimize(ng-click="toggleMinimized()", data-toggle='tooltip', title='Minimize', ng-show='fullScreen')
+      i.glyphicon.glyphicon-arrow-down(ng-class="{ minimized : 'minimized' }")
+  .open-back(ng-show='showOpenDialog', ng-click='closeOpenDialog()')
+  .open-dialog(ng-show='showOpenDialog')
+    button.btn.btn-default.close-btn.pull-right(ng-click='closeOpenDialog()') &times;
+    h4 Select a Document to Open
+    table
+      tr(ng-repeat="doc in docs | orderBy:getModifiedTime:true", ng-click="openDoc(doc)")
+        td
+          strong.name {{ doc.name }}
+        td
+          em.date {{ doc.modified.toLocaleString() }}
+        td
+          em.hash {{ doc.hash }}
+        td
+          .delete-btn(ng-click="removeDoc(doc)") &times;
+      tr(ng-hide="docs.length")
+        td(colspan=4) No documents saved on this browser
+  .dl-back(ng-show='showDlDialog', ng-click='closeDlDialog()')
+  .dl-dialog(ng-show='showDlDialog')
+    button.btn.btn-default.close-btn.pull-right(ng-click='closeDlDialog()') &times;
+    h4 Download your prototype
+    strong Dependencies
+    ul
+      li gnu make
+      li nodejs
+      li component(1)
+      li less
+      li jade
+    .instructions
+      pre
+        code.bash.
+          // this will download bootstrap & angular,
+          // compile your jade & less files
+          // and bundle your js
+          $ make build
+          // use python's built in static file server
+          $ make serve
+    p
+      |Then open <a href="http://localhost:8000">localhost:8000</a>
+      != " and you're there!"
+    a#download-link.btn.btn-primary(download="prototype.zip") Download the Zip

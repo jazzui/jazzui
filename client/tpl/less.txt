@@ -1,9 +1,15 @@
 .starter-template {
   padding: 40px 15px;
   text-align: center;
+  
+  h1 {
+    color: #131371;
+    text-shadow: 2px 2px 3px rgba(63, 63, 85, 0.98);
+    font-weight: bold;
+  }
 
   ul.people {
-    width: 250px;
+    width: 270px;
     padding: 0;
     margin: 0 auto;
     li {
@@ -15,8 +21,12 @@
         margin-right: 20px;
         margin-bottom: 10px;
         border-radius: 5px;
+        box-shadow: 3px 3px 2px rgba(199, 199, 199, 0.71);
+      }
+      
+      .age {
+        margin-left: 6px;
       }
     }
   }
 }
-

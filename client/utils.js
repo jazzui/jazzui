@@ -19,9 +19,9 @@ function getNumber(line, pos) {
     , typ
   console.log(before, after, line, pos)
   if (!before && !after) return
-  start = pos - (before ? before[0].length : 0)
-  end = pos + (after ? after[0].length : 0)
-  text = (before ? before[0] : '') + (after ? after[0] : '')
+  var start = pos - (before ? before[0].length : 0)
+  var end = pos + (after ? after[0].length : 0)
+  var text = (before ? before[0] : '') + (after ? after[0] : '')
   if (text.indexOf('.') === -1) {
     num = parseInt(text, 10)
     typ = 'int'
@@ -68,7 +68,7 @@ function addCommands(ace) {
     name: 'downSmall',
     bindKey: {win: 'Ctrl-Down', mac: 'Command-Down'},
     exec: function (e) {
-      changeNum(e, {'int': -1, 'float': -.1})
+      changeNum(e, {'int': -1, 'float': -0.1})
     }
   })
 
@@ -84,7 +84,7 @@ function addCommands(ace) {
     name: 'upSmall',
     bindKey: {win: 'Ctrl-Up', mac: 'Command-Up'},
     exec: function (e) {
-      changeNum(e, {'int': 1, 'float': .1})
+      changeNum(e, {'int': 1, 'float': 0.1})
     }
   })
 }
@@ -178,7 +178,7 @@ function createZip(tpls, mirrors) {
   return zip.generate({ type: 'blob' })
 }
 
-function makeMirror(name, el, mode, store, onChange) {
+function makeMirror(name, el, mode, store, onChange, onError) {
   var m = ace.edit(el)
   m.setTheme('ace/theme/twilight')
   m.getSession().setMode('ace/mode/' + mode)
@@ -195,9 +195,7 @@ function makeMirror(name, el, mode, store, onChange) {
   })
   var saveBouncer = rebounce(function (text) {
     store.saveOne(name, text, function (err) {
-      if (err) {
-        console.error('Failed to save ' + name)
-      }
+      if (err) onError(err)
     })
   }, 2000)
   m.on('change', debounce(function (change) {

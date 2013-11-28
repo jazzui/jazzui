@@ -6,8 +6,9 @@ html
     include includes.jade
     script.
       window.addEventListener('load', function () {
-        require('jazzui')(document, window, false)
+        require('jazzui')(document, window, true)
       })
   body
     include editors.jade
     include interaction.jade
+
