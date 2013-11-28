@@ -46,7 +46,7 @@ Ok, so I don't have real-time collaboration yet =) but if you host it yourself, 
 - highlight nodes; you ctrl-click somewhere in the jade file, and it is highlighted in the preview
 - "style this"; when editing the jade file, have some shortcut to take you right into less, styling that node. This would require a dropdown w/ choices of "what selector combination do you want". I think it would come in handy, though.
 - [firebase](https://www.firebase.com/) integration? That could get really cool really fast
-- edit files on your machine; that way you could export the prototype, start fleshing it out as a real app, but still jump back into JazzUI for new UI developments.
+- edit files on your machine; that way you could export the prototype, start fleshing it out as a real app, but still jump back into JazzUI for new UI developments. Maybe using [node-webkit](https://github.com/rogerwang/node-webkit)
 
 ## Lower priority
 
