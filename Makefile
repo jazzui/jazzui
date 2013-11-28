@@ -25,9 +25,9 @@ web/index.html: jade/index.jade jade/*.jade
 web/ace:
 	@mkdir -p tmp-ace;\
 		cd tmp-ace;\
-	    wget https://github.com/ajaxorg/ace-builds/archive/master.zip;\
-	    unzip master.zip;\
-	    mv ace-builds-master/src-noconflict ../web/ace;\
+	    curl -L -o master.tar.gz https://github.com/ajaxorg/ace-builds/archive/master.tar.gz;\
+	    tar zxf master.tar.gz;\
+	    cp -r ace-builds-master/src-noconflict ../web/ace;\
 	    cd ..;\
 	    rm -rf tmp-ace
 
