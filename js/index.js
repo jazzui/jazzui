@@ -12453,6 +12453,9 @@ ApiStore.prototype = {\n\
         if (res.status !== 200) {\n\
           return done(new Error(res.text))\n\
         }\n\
+        for (var i=0; i<res.body.length; i++) {\n\
+          res.body[i].modified = new Date(res.body[i].modified)\n\
+        }\n\
         done(null, res.body)\n\
       })\n\
   },\n\
