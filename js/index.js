@@ -11920,7 +11920,9 @@ function MainController (manager, $scope, store) {\n\
     window.location.hash = doc.hash\n\
     $scope.showOpenDialog = false\n\
   }\n\
-  $scope.removeDoc = function (doc) {\n\
+  $scope.removeDoc = function (doc, e) {\n\
+    e.preventDefault()\n\
+    e.stopPropagation()\n\
     store.remove(doc.hash, function (err, docs, cached) {\n\
       if (err) {\n\
         $scope.serverError = err.message\n\
@@ -11929,7 +11931,9 @@ function MainController (manager, $scope, store) {\n\
         $scope.docs = docs\n\
       }\n\
       if (!cached) $scope.$digest()\n\
+      if (store.currentHash === doc.hash) window.location.hash = '';\n\
     })\n\
+    return false\n\
   }\n\
   $scope.closeOpenDialog = function () {\n\
     $scope.showOpenDialog = false\n\
