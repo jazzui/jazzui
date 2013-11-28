@@ -1,8 +1,7 @@
-
 # Not your average prototypes
 
-- Does your favorite mock-up tool output production ready code?
-- Of course not, that would take way too much time / effort! That's why we make mockups, so we can iterate quickly...
+### Does your favorite mock-up tool output production ready code?
+Of course not, that would take way too much time / effort! That's why we make mockups, so we can iterate quickly...
 
 JazzUI makes it easier to get into the flexibility and precision of html/css while still maintaining the quick iterative features of a traditional mockup tool. Plus more awesome.
 
