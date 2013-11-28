@@ -52,4 +52,12 @@ clean:
 lint:
 	@jshint --verbose *.json client lib *.js test
 
+gh-pages: default
+	@rm -rf w
+	@cp -r web w
+	@git co gh-pages
+	@rm -rf css js ace index.html online.html
+	@mv w/* ./
+	@rm -rf w
+
 .PHONY: clean lint test serve serve-static heroku make-online
