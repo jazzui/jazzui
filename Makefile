@@ -1,4 +1,6 @@
 
+PATH:=${PATH}:./node_modules/.bin
+
 default: manual-build build
 
 manual-build: web/css/index.css web/index.html web/online.html web/ace
@@ -9,7 +11,7 @@ make-online:
 	@mv web/online.html web/index.html
 
 get-globals:
-	npm install -g component jade stylus
+	npm install component jade stylus
 
 web/css/index.css: styl/index.styl
 	@stylus < styl/index.styl > web/css/index.css
