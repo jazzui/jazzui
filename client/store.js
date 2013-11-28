@@ -1,11 +1,81 @@
 
+var request = require('superagent')
+
 module.exports = {
   LocalStore: LocalStore,
   ApiStore: ApiStore
 }
 
-function ApiStore() {
+function ApiStore(base) {
+  this.base = base || '/'
   throw new Error("Not Implemented")
+}
+
+ApiStore.prototype = {
+  // [{name:, modified:, hash:}, ...]
+  list: function (done) {
+    request.get(this.base + 'project/')
+      .end(function (res) {
+        if (res.status !== 200) {
+          return done(new Error(res.text))
+        }
+        done(null, res.body)
+      })
+  },
+  remove: function (hash, done) {
+    request.del(this.base + 'project/' + hash)
+      .end(function (res) {
+        if (res.status !== 200) {
+          return done(new Error(res.text))
+        }
+        done(null, res.body)
+      })
+  },
+  get: function (hash, done) {
+    request.get(this.base + 'project/' + hash)
+      .end(function (res) {
+        if (res.status !== 200) {
+          return done(new Error(res.text))
+        }
+        done(null, res.body.info.name, res.body.docs)
+      })
+  },
+  put: function (hash, data, done) {
+    request.put(this.base + 'project/' + hash)
+      .send(data)
+      .end(function (res) {
+        if (res.status !== 200) {
+          return done(new Error(res.text))
+        }
+        done()
+      })
+  },
+  saveName: function (hash, name, done) {
+    if (arguments.length === 2) {
+      done = name
+      name = hash
+      hash = this.currentHash
+    }
+    this.put(hash, {name: name}, done)
+  },
+  save: function (id, name, data, done) {
+    if (arguments.length === 3) {
+      done = data
+      data = name
+      name = id
+      id = this.currentHash
+    }
+    this.put(id, {name: name, docs: data}, done)
+  },
+  saveOne: function (id, type, txt, done) {
+    if (arguments.length === 3) {
+      done = txt
+      txt = type
+      type = id
+      id = this.currentHash
+    }
+    this.put(id, {docs: {type: txt}}, done)
+  }
 }
 
 // ls: window.localStorage
@@ -19,6 +89,7 @@ function LocalStore(ls) {
 //   modified:
 // }
 LocalStore.prototype = {
+  // [{name:, modified:, hash:}, ...]
   list: function (done) {
     var docs = []
       , doc

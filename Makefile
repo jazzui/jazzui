@@ -36,6 +36,6 @@ clean:
 	rm -fr build components template.js
 
 lint:
-	@jshint --verbose *.json client
+	@jshint --verbose *.json client lib *.js test
 
 .PHONY: clean

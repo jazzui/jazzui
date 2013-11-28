@@ -105,23 +105,10 @@ function makeMirror(name, el, mode, store, onChange) {
   m.getSession().setMode('ace/mode/' + mode)
   m.setValue('')
   m.clearSelection()
-  /*
-  new CodeMirror(el, {
-    value: '',
-    mode: mode,
-    theme: 'twilight',
-    extraKeys: {
-      Tab: function(cm) {
-        var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
-        cm.replaceSelection(spaces, "end", "+input");
-      }
-    }
-  })
-  */
   var reloading = true
-  var reload = document.querySelector('.' + name + ' > .reload-btn')
+  var reload = document.querySelector('.section.' + name + ' > .reload-btn')
+  var syntax_error = document.querySelector('.section.' + name + ' > .syntax-error')
   var tip = tipMe(reload, 'Click to disable automatic reload')
-  // tip.position('south')
   reload.addEventListener('click', function () {
     reloading = !reloading
     tip.message('Click to ' + (reloading ? 'dis' : 'en') + 'able automatic reload')
@@ -136,7 +123,16 @@ function makeMirror(name, el, mode, store, onChange) {
   }, 2000)
   m.on('change', debounce(function (change) {
     var text = m.getValue()
-    if (reloading) onChange(text)
+    if (reloading) {
+      onChange(text, function (error) {
+        if (error) {
+          syntax_error.innerHTML = error;
+          syntax_error.style.display = 'block';
+        } else {
+          syntax_error.style.display = 'none';
+        }
+      })
+    }
     saveBouncer(text)
   }))
   m.getSession().setTabSize(2)
