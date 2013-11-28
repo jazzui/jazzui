@@ -12362,16 +12362,17 @@ function createZip(tpls, mirrors) {\n\
     , main = zip.folder('prototype')\n\
     , jsf = main.folder(\"js\")\n\
     , cssf = main.folder(\"css\")\n\
-    , stylf = main.folder(\"styl\")\n\
+    , lessf = main.folder(\"less\")\n\
     , jadef = main.folder(\"jade\")\n\
 \n\
   main.file('component.json', tpls.componentjson)\n\
   main.file('Makefile', tpls.makefile)\n\
   jadef.file('index.jade', tpls.outjade)\n\
   jadef.file('proto.jade', mirrors.jade.getValue())\n\
-  stylf.file('index.less', 'body { @import \"proto.less\"; }')\n\
-  stylf.file('proto.less', mirrors.less.getValue())\n\
-  main.file('index.js', mirrors.xon.getValue())\n\
+  lessf.file('index.less', 'body { @import \"proto.less\"; }')\n\
+  lessf.file('proto.less', mirrors.less.getValue())\n\
+  main.file('proto.js', mirrors.xon.getValue())\n\
+  main.file('index.js', tpls.outjs)\n\
 \n\
   return zip.generate({ type: 'blob' })\n\
 }\n\
@@ -12737,7 +12738,7 @@ function init($scope, app) {\\n\
 ));
 require.register("jazzui/client/tpl/makefile.txt.js", Function("exports, require, module",
 "module.exports = '\\n\
-build: index.html css/index.css index.js components bootstrap js/angular.js\\n\
+build: index.html css/index.css index.js proto.js components bootstrap js/angular.js\\n\
 \t@component build --dev -n index -o js\\n\
 \\n\
 components: component.json\\n\
@@ -12746,8 +12747,8 @@ components: component.json\\n\
 index.html: jade/index.jade\\n\
 \t@jade jade/index.jade -o .\\n\
 \\n\
-css/index.css: styl/index.styl\\n\
-\t@stylus < styl/index.styl > css/index.css\\n\
+css/index.css: less/index.less\\n\
+\t@lessc less/index.less css/index.css\\n\
 \\n\
 serve:\\n\
 \t@python -m SimpleHTTPServer ${PORT}\\n\
@@ -12782,6 +12783,7 @@ require.register("jazzui/client/tpl/componentjson.txt.js", Function("exports, re
   \"license\": \"MIT\",\\n\
   \"main\": \"index.js\",\\n\
   \"scripts\": [\\n\
+    \"proto.js\",\\n\
     \"index.js\"\\n\
   ]\\n\
 }\\n\
@@ -12791,7 +12793,7 @@ require.register("jazzui/client/tpl/outjs.txt.js", Function("exports, require, m
 "module.exports = 'var x = require(\\'xon\\')\\n\
   , proto = require(\\'./proto\\')\\n\
 \\n\
-module.exports = function (angular) {\\n\
+module.exports = function (document) {\\n\
   var AppName = \\'MyApp\\'\\n\
   var app = angular.module(AppName, [])\\n\
     .factory(\\'getData\\', function () {\\n\
@@ -12809,6 +12811,8 @@ module.exports = function (angular) {\\n\
         if (!cached) $scope.$digest()\\n\
       })\\n\
     }])\\n\
+\\n\
+  angular.bootstrap(document.getElementById(\"main\"), [AppName])\\n\
 \\n\
   return AppName\\n\
 }\\n\
