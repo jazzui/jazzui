@@ -38,7 +38,7 @@
         td
           em.hash {{ doc.hash }}
         td
-          .delete-btn(ng-click="removeDoc(doc)") &times;
+          .delete-btn(ng-click="removeDoc(doc, $event)") &times;
       tr(ng-hide="docs.length")
         td(colspan=4) No documents saved on this browser
   .dl-back(ng-show='showDlDialog', ng-click='closeDlDialog()')
