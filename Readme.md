@@ -5,6 +5,8 @@ Of course not, that would take way too much time / effort! That's why we make mo
 
 JazzUI makes it easier to get into the flexibility and precision of html/css while still maintaining the quick iterative features of a traditional mockup tool. Plus more awesome.
 
+![Main screenshot](/docs/screenshot.png)
+
 ## Where's the magic?
 
 - jade = more concise html
@@ -54,8 +56,6 @@ Ok, so I don't have real-time collaboration yet =) but if you host it yourself, 
 - real-time collaboration would be cool, but I don't know how practical
 - a bootstrap theme that feels more mockup-like; bolder lines, just shades of grey...
 
-
-
 ## Things other people might want
 
 - stylus support (I actually started in stylus, but there's no easy-to-grab browser version)
@@ -63,7 +63,9 @@ Ok, so I don't have real-time collaboration yet =) but if you host it yourself, 
 - coffeescript
 - ??? let me know in the github issues, or even better Fork and Pull Request
 
+## More Screenshots
 
+![demo screenshot](/docs/demo-screenshot.png)
 
 
 
