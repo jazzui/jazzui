@@ -56,7 +56,7 @@ gh-pages: default
 	@rm -rf w
 	@cp -r web w
 	@git co gh-pages
-	@rm -rf css js ace index.html online.html
+	@rm -rf css js ace index.html online.html bootstrap
 	@mv w/* ./
 	@rm -rf w
 
