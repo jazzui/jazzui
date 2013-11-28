@@ -33,7 +33,7 @@ function Manager(document){
 }
 
 Manager.prototype = {
-  jade: function (txt) {
+  jade: function (txt, done) {
     if (arguments.length === 0) return this.data.jade
     var parent = this.els.output.parentNode
       , html
@@ -41,21 +41,23 @@ Manager.prototype = {
       html = jade.compile(txt)()
     } catch (e) {
       console.error("Jade failed to compile")
-      return
+      return done('syntax error')
     }
     this.data.jade = txt
     parent.innerHTML = '<div id="output">' + html + '</div>'
     angular.bootstrap((this.els.output = parent.firstChild), ['MyApp'])
     if (this.zoomIt) this.zoomIt(this.els.output)
+    done()
   },
-  less: function (txt) {
+  less: function (txt, done) {
     var self = this
     txt = '#output {  ' + txt.replace(/\n/g,'\n  ') + ' }'
     var p = new less.Parser()
     p.parse(txt, function (err, tree) {
-      if (err) return
+      if (err) return done(err)
       self.data.less = txt
       self.els['injected-css'].innerHTML = tree.toCSS()
+      done()
     })
   },
   updateXon: function (proto, cached) {
@@ -98,6 +100,7 @@ Manager.prototype = {
   },
   xon: function (txt, scope, app) {
     if (arguments.length === 0) return this.data.xon
+    var done = function () {}
     if (arguments.length === 3) {
       this.scope = scope
       this.app = app
@@ -107,17 +110,22 @@ Manager.prototype = {
         }
         txt = this.data.xon
       }
+    } else if (arguments.length == 2) {
+      done = scope
     }
     var proto
     try {
       proto = compileXon(txt)
     } catch (e) {
       console.log('xon error!', e)
+      done('Failed to compile')
       return false
     }
     if ('function' !== typeof proto.getData || 'function' !== typeof proto.init) {
+      done('getData or init not found')
       return false
     }
+    done()
     this.data.xon = txt
     this.lastXon = proto
     this.updateXon(proto)

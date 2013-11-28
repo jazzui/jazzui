@@ -185,7 +185,8 @@ function makeMirror(name, el, mode, store, onChange) {
   m.setValue('')
   m.clearSelection()
   var reloading = true
-  var reload = document.querySelector('.' + name + ' > .reload-btn')
+  var reload = document.querySelector('.section.' + name + ' > .reload-btn')
+  var syntax_error = document.querySelector('.section.' + name + ' > .syntax-error')
   var tip = tipMe(reload, 'Click to disable automatic reload')
   reload.addEventListener('click', function () {
     reloading = !reloading
@@ -201,7 +202,16 @@ function makeMirror(name, el, mode, store, onChange) {
   }, 2000)
   m.on('change', debounce(function (change) {
     var text = m.getValue()
-    if (reloading) onChange(text)
+    if (reloading) {
+      onChange(text, function (error) {
+        if (error) {
+          syntax_error.innerHTML = error;
+          syntax_error.style.display = 'block';
+        } else {
+          syntax_error.style.display = 'none';
+        }
+      })
+    }
     saveBouncer(text)
   }))
   m.getSession().setTabSize(2)
