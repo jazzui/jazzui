@@ -32,6 +32,9 @@ ApiStore.prototype = {
         if (res.status !== 200) {
           return done(new Error(res.text))
         }
+        for (var i=0; i<res.body.length; i++) {
+          res.body[i].modified = new Date(res.body[i].modified)
+        }
         done(null, res.body)
       })
   },
