@@ -1,3 +1,15 @@
+.syntax-error {
+  position: absolute;
+  top: 5px;
+  right: 50px;
+  z-index: 1000;
+  border: 1px solid #500;
+  background-color: #a77;
+  color: #fff;
+  font-weight: bold;
+  display: none;
+  padding: 5px 10px;
+}
 .tip {
   z-index: 2005;
   padding: 0;
@@ -24,18 +36,28 @@
   position: relative;
 }
 #output {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   overflow: auto;
   background-color: #fff;
 }
 #output.fullScreen {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 2000;
   zoom: 100% !important;
+}
+#interaction .server-error {
+  margin-right: 20px;
+  color: #ff1b1b;
+  font-weight: bold;
+  text-shadow: 2px 2px 2px #000;
 }
 #interaction .dl-dialog,
 #interaction .open-dialog {
@@ -115,13 +137,12 @@
 #interaction .floater {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  margin-left: -300px;
-  width: 600px;
+  left: 0;
+  right: 0;
+  height: 30px;
   text-align: center;
   z-index: 2001;
   background-color: #333;
-  border-radius: 5px;
   color: #ddd;
 }
 #interaction .floater .minimize i {
@@ -136,8 +157,11 @@
   -webkit-transform: rotate(135deg);
 }
 #interaction .floater.fullScreen {
+  border-radius: 5px;
   width: 520px;
   margin-left: -260px;
+  left: 50%;
+  right: auto;
 }
 #interaction .floater.fullScreen.minimized {
   left: auto;
@@ -175,7 +199,7 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 30px;
 }
 .main .mirror {
   width: 100%;
@@ -211,5 +235,6 @@
   box-sizing: border-box;
   border: 1px solid #000;
   flex-direction: column;
+  position: relative;
 }
 
