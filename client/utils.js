@@ -12,6 +12,85 @@ module.exports = {
   makeMirror: makeMirror
 }
 
+function getNumber(line, pos) {
+  var before = line.slice(0, pos).match(/[\d.]+$/)
+    , after = line.slice(pos).match(/^[\d.]+/)
+    , num
+    , typ
+  console.log(before, after, line, pos)
+  if (!before && !after) return
+  start = pos - (before ? before[0].length : 0)
+  end = pos + (after ? after[0].length : 0)
+  text = (before ? before[0] : '') + (after ? after[0] : '')
+  if (text.indexOf('.') === -1) {
+    num = parseInt(text, 10)
+    typ = 'int'
+  } else if (text.split('.').length > 2) {
+    return // punt on this for the moment
+  } else {
+    num = parseFloat(text)
+    typ = 'float'
+  }
+  return {
+    text: text,
+    num: num,
+    typ: typ,
+    start: start,
+    end: end
+  }
+}
+
+function changeNum(editor, by) {
+  console.log('move', by)
+  var r = editor.getSelectionRange()
+    , pos = r.start
+    , line = editor.getSession().doc.getLine(pos.row)
+    , num = getNumber(line, pos.column)
+  if ('undefined' === typeof num) return
+  num.num += by[num.typ]
+  console.log('found', num)
+  r.setStart(pos.row, num.start)
+  r.setEnd(pos.row, num.end)
+  editor.getSelection().setRange(r)
+  editor.insert(num.num + '')
+}
+
+function addCommands(ace) {
+  ace.commands.addCommand({
+    name: 'downBig',
+    bindKey: {win: 'Ctrl-Shift-Down', mac: 'Command-Shift-Up'},
+    exec: function (e) {
+      changeNum(e, {'int': -10, 'float': -10})
+    }
+  })
+
+  ace.commands.addCommand({
+    name: 'downSmall',
+    bindKey: {win: 'Ctrl-Down', mac: 'Command-Down'},
+    exec: function (e) {
+      changeNum(e, {'int': -1, 'float': -.1})
+    }
+  })
+
+  ace.commands.addCommand({
+    name: 'upBig',
+    bindKey: {win: 'Ctrl-Shift-Up', mac: 'Command-Shift-Up'},
+    exec: function (e) {
+      changeNum(e, {'int': 10, 'float': 10})
+    }
+  })
+
+  ace.commands.addCommand({
+    name: 'upSmall',
+    bindKey: {win: 'Ctrl-Up', mac: 'Command-Up'},
+    exec: function (e) {
+      changeNum(e, {'int': 1, 'float': .1})
+    }
+  })
+}
+
+
+
 // called the first time, then sets a timeout. All calls within the
 // "bounce" are ignored, but the arguments are updated, such that the
 // last call before the bounce will be executed once the bounce is
@@ -105,23 +184,9 @@ function makeMirror(name, el, mode, store, onChange) {
   m.getSession().setMode('ace/mode/' + mode)
   m.setValue('')
   m.clearSelection()
-  /*
-  new CodeMirror(el, {
-    value: '',
-    mode: mode,
-    theme: 'twilight',
-    extraKeys: {
-      Tab: function(cm) {
-        var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
-        cm.replaceSelection(spaces, "end", "+input");
-      }
-    }
-  })
-  */
   var reloading = true
   var reload = document.querySelector('.' + name + ' > .reload-btn')
   var tip = tipMe(reload, 'Click to disable automatic reload')
-  // tip.position('south')
   reload.addEventListener('click', function () {
     reloading = !reloading
     tip.message('Click to ' + (reloading ? 'dis' : 'en') + 'able automatic reload')
@@ -140,6 +205,7 @@ function makeMirror(name, el, mode, store, onChange) {
     saveBouncer(text)
   }))
   m.getSession().setTabSize(2)
+  addCommands(m)
   return m
 }
 
