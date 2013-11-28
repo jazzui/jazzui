@@ -11,6 +11,9 @@ var xon = require('xon')
   , tpls = require('./tpls')
   , utils = require('./utils')
 
+// yes this is evil, but firefox doesn't support `zoom`. So I have to do some
+// magic.
+var amIonFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') !== -1
 
 angular.module('helpers', []).factory('manager', function () {
   return new Manager(document)
@@ -70,6 +73,12 @@ function MainController (manager, $scope, store) {
 
   manager.zoomIt = function (el) {
     el.style.zoom = $scope.zoomLevel + '%';
+    if (amIonFirefox) {
+      el.style.MozTransform = 'scale(' + $scope.zoomLevel/100 + ')';
+      var p = -(50/$scope.zoomLevel - .5) * 100 + '%'
+      console.log('transfff', p)
+      el.style.top = el.style.left = el.style.bottom = el.style.right = p
+    }
   }
 
   $scope.$watch('docTitle', utils.debounce(function (value, prev) {
@@ -172,6 +181,11 @@ function MainController (manager, $scope, store) {
   $scope.fullScreen = false
   $scope.$watch('zoomLevel', function (value) {
     manager.els.output.style.zoom = value + '%';
+    manager.els.output.style.MozTransform = 'scale(' + value/100 + ')'
+    if (amIonFirefox) {
+      var p = -(50/$scope.zoomLevel - .5) * 100 + '%'
+      manager.els.output.style.top = manager.els.output.style.left = manager.els.output.style.bottom = manager.els.output.style.right = p
+    }
   })
   $scope.$watch('fullScreen', function (value) {
     if (value) manager.els.output.classList.add('fullScreen')

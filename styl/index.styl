@@ -45,12 +45,13 @@
 
   &.fullScreen
     position: fixed
-    top: 0
-    left: 0
-    right: 0
-    bottom: 0
+    top: 0 !important
+    left: 0 !important
+    right: 0 !important
+    bottom: 0 !important
     z-index: 2000
     zoom: 100% !important
+    -moz-transform: none !important
     
 
 #interaction
@@ -145,6 +146,7 @@
     .minimize
       i
         -webkit-transform: rotate(-45deg)
+        -moz-transform: rotate(-45deg)
         zoom: 80%
 
     &.minimized
@@ -153,10 +155,11 @@
 
       .minimize i
         -webkit-transform: rotate(135deg)
+        -moz-transform: rotate(135deg)
 
     &.fullScreen
       border-radius: 5px
-      width: 520px
+      width: 540px
       margin-left: -260px
       left: 50%
       right: auto
@@ -225,7 +228,7 @@
   > div
     flex: 1
     display: flex
-    flex-flow: column
+    flex-direction: column
 
     > div
       flex: 1
