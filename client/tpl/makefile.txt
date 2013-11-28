@@ -1,5 +1,5 @@
 
-build: index.html css/index.css index.js components bootstrap js/angular.js
+build: index.html css/index.css index.js proto.js components bootstrap js/angular.js
 	@component build --dev -n index -o js
 
 components: component.json
@@ -8,8 +8,8 @@ components: component.json
 index.html: jade/index.jade
 	@jade jade/index.jade -o .
 
-css/index.css: styl/index.styl
-	@stylus < styl/index.styl > css/index.css
+css/index.css: less/index.less
+	@lessc less/index.less css/index.css
 
 serve:
 	@python -m SimpleHTTPServer ${PORT}

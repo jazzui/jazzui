@@ -1,7 +1,7 @@
 var x = require('xon')
   , proto = require('./proto')
 
-module.exports = function (angular) {
+module.exports = function (document) {
   var AppName = 'MyApp'
   var app = angular.module(AppName, [])
     .factory('getData', function () {
@@ -19,6 +19,8 @@ module.exports = function (angular) {
         if (!cached) $scope.$digest()
       })
     }])
+
+  angular.bootstrap(document.getElementById("main"), [AppName])
 
   return AppName
 }

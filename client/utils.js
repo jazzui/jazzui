@@ -164,16 +164,17 @@ function createZip(tpls, mirrors) {
     , main = zip.folder('prototype')
     , jsf = main.folder("js")
     , cssf = main.folder("css")
-    , stylf = main.folder("styl")
+    , lessf = main.folder("less")
     , jadef = main.folder("jade")
 
   main.file('component.json', tpls.componentjson)
   main.file('Makefile', tpls.makefile)
   jadef.file('index.jade', tpls.outjade)
   jadef.file('proto.jade', mirrors.jade.getValue())
-  stylf.file('index.less', 'body { @import "proto.less"; }')
-  stylf.file('proto.less', mirrors.less.getValue())
-  main.file('index.js', mirrors.xon.getValue())
+  lessf.file('index.less', 'body { @import "proto.less"; }')
+  lessf.file('proto.less', mirrors.less.getValue())
+  main.file('proto.js', mirrors.xon.getValue())
+  main.file('index.js', tpls.outjs)
 
   return zip.generate({ type: 'blob' })
 }
