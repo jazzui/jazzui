@@ -3,6 +3,14 @@ default: manual-build build
 
 manual-build: web/css/index.css web/index.html web/online.html web/ace
 
+heroku: get-globals default make-online
+
+make-online:
+	@mv web/online.html web/index.html
+
+get-globals:
+	npm install -g component jade stylus
+
 web/css/index.css: styl/index.styl
 	@stylus < styl/index.styl > web/css/index.css
 
@@ -30,6 +38,9 @@ build: components client/index.js $(TPLS)
 	@component build --dev -n index -o web/js
 
 serve:
+	@node server.js
+
+serve-static:
 	@cd web; python -m SimpleHTTPServer
 
 components: component.json
@@ -41,4 +52,4 @@ clean:
 lint:
 	@jshint --verbose *.json client lib *.js test
 
-.PHONY: clean
+.PHONY: clean lint test serve serve-static heroku make-online
