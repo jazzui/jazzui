@@ -65,6 +65,8 @@ Ok, so I don't have real-time collaboration yet =) but if you host it yourself, 
 
 ## More Screenshots
 
+### Demo mode
+
 ![demo screenshot](/docs/demo-screenshot.png)
 
 
