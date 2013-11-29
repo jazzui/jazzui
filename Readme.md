@@ -39,6 +39,14 @@ Also, bootstrap 3 is built in, allowing you to go from zero to something that lo
 ### painless collaboration / demoing?
 Ok, so I don't have real-time collaboration yet =) but if you host it yourself, JazzUI has an "online" mode where everything syncs to a mongodb server, allowing for easy sharing of prototypes. And then you can demo from anywhere.
 
+### open source & self hosting?
+Personally, I'm wary of adopting a new platform that's not open source,
+because I always want to be extending/adapting it to my specific situation.
+
+JazzUI is 100% open source, and given that it's based on the
+[Ace code editor](http://ace.c9.io), there's a lot of potential for awesome
+IDE features to be added.
+
 # Next Steps
 
 ## Things I want to implement
