@@ -62,4 +62,15 @@ gh-pages: default
 	@mv w/* ./
 	@rm -rf w
 
-.PHONY: clean lint test serve serve-static heroku make-online
+node-webkit:
+	@rm -rf tmp-nw
+	@cp -r web tmp-nw
+	@cp node-webkit.json tmp-nw/package.json
+	@jade jade/node-webkit.jade -o tmp-nw
+	@mv tmp-nw/node-webkit.html tmp-nw/index.html
+	@component build -s jazzui -o tmp-nw/js -n index
+	@cd tmp-nw && zip -r ../jazzui.nw *
+	@rm -rf tmp-nw
+	@echo "Node Webkit package ready"
+
+.PHONY: clean lint test serve serve-static heroku make-online node-webkit

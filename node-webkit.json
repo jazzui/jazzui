@@ -1,0 +1,8 @@
+{
+    "name": "jazzui",
+    "main": "index.html",
+    "window": {
+        "title": "JazzUI - Not Your Average Prototypes",
+        "toolbar": false
+    }
+}

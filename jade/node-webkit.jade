@@ -1,0 +1,13 @@
+!!!
+html
+  head
+    title JazzUI
+
+    include includes.jade
+    script.
+      window.addEventListener('load', function () {
+        jazzui(document, window, false)
+      })
+  body
+    include editors.jade
+    include interaction.jade
