@@ -2269,6 +2269,189 @@ require.register("component-tip/template.js", Function("exports, require, module
   <div class=\"tip-inner\"></div>\\n\
 </div>';//@ sourceURL=component-tip/template.js"
 ));
+require.register("knicklabs-lorem-ipsum.js/lib/dictionary.js", Function("exports, require, module",
+"var dictionary = {\n\
+  words: [\n\
+    'ad',\n\
+    'adipisicing',\n\
+    'aliqua',\n\
+    'aliquip',\n\
+    'amet',\n\
+    'anim',\n\
+    'aute',\n\
+    'cillum',\n\
+    'commodo',\n\
+    'consectetur',\n\
+    'consequat',\n\
+    'culpa',\n\
+    'cupidatat',\n\
+    'deserunt',\n\
+    'do',\n\
+    'dolor',\n\
+    'dolore',\n\
+    'duis',\n\
+    'ea',\n\
+    'eiusmod',\n\
+    'elit',\n\
+    'enim',\n\
+    'esse',\n\
+    'est',\n\
+    'et',\n\
+    'eu',\n\
+    'ex',\n\
+    'excepteur',\n\
+    'exercitation',\n\
+    'fugiat',\n\
+    'id',\n\
+    'in',\n\
+    'incididunt',\n\
+    'ipsum',\n\
+    'irure',\n\
+    'labore',\n\
+    'laboris',\n\
+    'laborum',\n\
+    'Lorem',\n\
+    'magna',\n\
+    'minim',\n\
+    'mollit',\n\
+    'nisi',\n\
+    'non',\n\
+    'nostrud',\n\
+    'nulla',\n\
+    'occaecat',\n\
+    'officia',\n\
+    'pariatur',\n\
+    'proident',\n\
+    'qui',\n\
+    'quis',\n\
+    'reprehenderit',\n\
+    'sint',\n\
+    'sit',\n\
+    'sunt',\n\
+    'tempor',\n\
+    'ullamco',\n\
+    'ut',\n\
+    'velit',\n\
+    'veniam',\n\
+    'voluptate'  \n\
+  ]\n\
+};\n\
+\n\
+module.exports = dictionary;//@ sourceURL=knicklabs-lorem-ipsum.js/lib/dictionary.js"
+));
+require.register("knicklabs-lorem-ipsum.js/lib/generator.js", Function("exports, require, module",
+"var generator = function() {\n\
+  var options = (arguments.length) ? arguments[0] : {}\n\
+    , count = options.count || 1\n\
+    , units = options.units || 'sentences'\n\
+    , sentenceLowerBound = options.sentenceLowerBound || 5\n\
+    , sentenceUpperBound = options.sentenceUpperBound || 15\n\
+\t  , paragraphLowerBound = options.paragraphLowerBound || 3\n\
+\t  , paragraphUpperBound = options.paragraphUpperBound || 7\n\
+\t  , format = options.format || 'plain'\n\
+    , words = options.words || require('./dictionary').words\n\
+    , random = options.random || Math.random;\n\
+\n\
+  units = simplePluralize(units.toLowerCase());\n\
+\n\
+  var randomInteger = function(min, max) {\n\
+    return Math.floor(random() * (max - min + 1) + min);\n\
+  };\n\
+  \n\
+  var randomWord = function(words) {\n\
+    return words[randomInteger(0, words.length - 1)];\n\
+  };\n\
+  \n\
+  var randomSentence = function(words, lowerBound, upperBound) {\n\
+    var sentence = ''\n\
+      , bounds = {min: 0, max: randomInteger(lowerBound, upperBound)};\n\
+    \n\
+    while (bounds.min < bounds.max) {\n\
+      sentence = sentence + ' ' + randomWord(words);\n\
+      bounds.min = bounds.min + 1;\n\
+    }\n\
+    \n\
+    if (sentence.length) {\n\
+      sentence = sentence.slice(1);\n\
+      sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1);\n\
+    }\n\
+  \n\
+    return sentence;\n\
+  };\n\
+\n\
+  var randomParagraph = function(words, lowerBound, upperBound, sentenceLowerBound, sentenceUpperBound) {\n\
+    var paragraph = ''\n\
+      , bounds = {min: 0, max: randomInteger(lowerBound, upperBound)};\n\
+      \n\
+    while (bounds.min < bounds.max) {\n\
+      paragraph = paragraph + '. ' + randomSentence(words, sentenceLowerBound, sentenceUpperBound);\n\
+      bounds.min = bounds.min + 1;\n\
+    }\n\
+    \n\
+    if (paragraph.length) {\n\
+      paragraph = paragraph.slice(2);\n\
+      paragraph = paragraph + '.';\n\
+    }\n\
+    \n\
+    return paragraph;\n\
+  }\n\
+  \n\
+  var iter = 0\n\
+    , bounds = {min: 0, max: count}\n\
+    , string = ''\n\
+    , prefix = ''\n\
+    , suffix = \"\\r\\n\
+\";\n\
+\n\
+  if (format == 'html') {\n\
+    prefix = '<p>';\n\
+    suffix = '</p>';\n\
+  }\n\
+      \n\
+  while (bounds.min < bounds.max) {\n\
+    switch (units.toLowerCase()) {\n\
+      case 'words':\n\
+        string = string + ' ' + randomWord(words);\n\
+        break;\n\
+      case 'sentences':\n\
+        string = string + '. ' + randomSentence(words, sentenceLowerBound, sentenceUpperBound);\n\
+        break;\n\
+      case 'paragraphs':\n\
+        string = string + prefix + randomParagraph(words, paragraphLowerBound, paragraphUpperBound, sentenceLowerBound, sentenceUpperBound) + suffix;\n\
+        break;\n\
+    }\n\
+    bounds.min = bounds.min + 1;\n\
+  }\n\
+    \n\
+  if (string.length) {\n\
+    var pos = 0;\n\
+    \n\
+    if (string.indexOf('. ') == 0) {\n\
+      pos = 2;\n\
+    } else if (string.indexOf('.') == 0 || string.indexOf(' ') == 0) {\n\
+      pos = 1;\n\
+    }\n\
+    \n\
+    string = string.slice(pos);\n\
+    \n\
+    if (units == 'sentences') {\n\
+      string = string + '.';\n\
+    }\n\
+  }  \n\
+  \n\
+  return string;\n\
+};\n\
+\n\
+function simplePluralize(string) {\n\
+  if (string.indexOf('s', string.length - 1) === -1) {\n\
+    return string + 's';\n\
+  }\n\
+  return string;\n\
+}\n\
+\n\
+module.exports = generator;\n\
+//@ sourceURL=knicklabs-lorem-ipsum.js/lib/generator.js"
+));
 require.register("jaredly-xon/index.js", Function("exports, require, module",
 "\n\
 var lib = require('./lib')\n\
@@ -2293,6 +2476,7 @@ require.register("jaredly-xon/lib/index.js", Function("exports, require, module"
 \n\
 var consts = require('./consts')\n\
   , image = require('./image')\n\
+  , loremIpsum = require('lorem-ipsum')\n\
 \n\
 var helpers = {\n\
   ObjectId: function (len) {\n\
@@ -2322,13 +2506,9 @@ var helpers = {\n\
   city: function () {\n\
     return helpers.choice(consts.cities)\n\
   },\n\
-  /*\n\
-  lipsum: function (min, max) {\n\
-    return consts.lipsum.split(' ').slice(0, helpers.randInt(min, max)).join(' ')\n\
+  lipsum: function (config) {\n\
+    return loremIpsum(config)\n\
   },\n\
-  image: function (width, height) {\n\
-  },\n\
-  */\n\
   some: function (min, max, fix) {\n\
     var num, results = []\n\
     if (arguments.length === 2) {\n\
@@ -11820,6 +12000,9 @@ var xon = require('xon')\n\
   , tpls = require('./tpls')\n\
   , utils = require('./utils')\n\
 \n\
+// yes this is evil, but firefox doesn't support `zoom`. So I have to do some\n\
+// magic.\n\
+var amIonFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') !== -1\n\
 \n\
 angular.module('helpers', []).factory('manager', function () {\n\
   return new Manager(document)\n\
@@ -11879,6 +12062,12 @@ function MainController (manager, $scope, store) {\n\
 \n\
   manager.zoomIt = function (el) {\n\
     el.style.zoom = $scope.zoomLevel + '%';\n\
+    if (amIonFirefox) {\n\
+      el.style.MozTransform = 'scale(' + $scope.zoomLevel/100 + ')';\n\
+      var p = -(50/$scope.zoomLevel - .5) * 100 + '%'\n\
+      console.log('transfff', p)\n\
+      el.style.top = el.style.left = el.style.bottom = el.style.right = p\n\
+    }\n\
   }\n\
 \n\
   $scope.$watch('docTitle', utils.debounce(function (value, prev) {\n\
@@ -11981,6 +12170,11 @@ function MainController (manager, $scope, store) {\n\
   $scope.fullScreen = false\n\
   $scope.$watch('zoomLevel', function (value) {\n\
     manager.els.output.style.zoom = value + '%';\n\
+    manager.els.output.style.MozTransform = 'scale(' + value/100 + ')'\n\
+    if (amIonFirefox) {\n\
+      var p = -(50/$scope.zoomLevel - .5) * 100 + '%'\n\
+      manager.els.output.style.top = manager.els.output.style.left = manager.els.output.style.bottom = manager.els.output.style.right = p\n\
+    }\n\
   })\n\
   $scope.$watch('fullScreen', function (value) {\n\
     if (value) manager.els.output.classList.add('fullScreen')\n\
@@ -12663,7 +12857,7 @@ require.register("jazzui/client/tpl/less.txt.js", Function("exports, require, mo
   }\\n\
 \\n\
   ul.people {\\n\
-    width: 270px;\\n\
+    width: 350px;\\n\
     padding: 0;\\n\
     margin: 0 auto;\\n\
     li {\\n\
@@ -12678,8 +12872,22 @@ require.register("jazzui/client/tpl/less.txt.js", Function("exports, require, mo
         box-shadow: 3px 3px 2px rgba(199, 199, 199, 0.71);\\n\
       }\\n\
       \\n\
+      .description {\\n\
+        border-radius: 5px;\\n\
+        margin-bottom: 10px;\\n\
+        box-shadow: 3px 3px 2px rgba(68, 20, 20, 0.42);\\n\
+        background-color:  #a55;\\n\
+        padding: 10px 15px;\\n\
+        color: white;\\n\
+      }\\n\
+      \\n\
       .age {\\n\
         margin-left: 6px;\\n\
+      }\\n\
+      \\n\
+      .name {\\n\
+        font-size: 25px;\\n\
+        font-weight: bold;\\n\
       }\\n\
     }\\n\
   }\\n\
@@ -12716,6 +12924,7 @@ require.register("jazzui/client/tpl/jade.txt.js", Function("exports, require, mo
         li(ng-repeat=\\'person in people\\')\\n\
           img(ng-src=\"{{person.picture}}\")\\n\
           span.name {{ person.name }}\\n\
+          div.description {{ person.description }}\\n\
 ';//@ sourceURL=jazzui/client/tpl/jade.txt.js"
 ));
 require.register("jazzui/client/tpl/xon.txt.js", Function("exports, require, module",
@@ -12729,11 +12938,12 @@ module.exports = {\\n\
 function getData(cb) {\\n\
   cb(null, x({\\n\
     // Mess with the fixtures here\\n\
-    people: x.some(3, 10, {\\n\
+    people: x.some(10, {\\n\
       name: x.fullName(),\\n\
       age: x.randInt(21, 45),\\n\
       status: x.choice([\\'new\\', \\'old\\', \\'middling\\']),\\n\
-      picture: x.image(46, 46)\\n\
+      picture: x.image(46, 46),\\n\
+      description: x.lipsum({})\\n\
     })\\n\
   }), true)\\n\
 }\\n\
@@ -12924,6 +13134,10 @@ require.alias("jaredly-xon/lib/image.js", "jazzui/deps/xon/lib/image.js");
 require.alias("jaredly-xon/lib/consts.js", "jazzui/deps/xon/lib/consts.js");
 require.alias("jaredly-xon/index.js", "jazzui/deps/xon/index.js");
 require.alias("jaredly-xon/index.js", "xon/index.js");
+require.alias("knicklabs-lorem-ipsum.js/lib/dictionary.js", "jaredly-xon/deps/lorem-ipsum/lib/dictionary.js");
+require.alias("knicklabs-lorem-ipsum.js/lib/generator.js", "jaredly-xon/deps/lorem-ipsum/lib/generator.js");
+require.alias("knicklabs-lorem-ipsum.js/lib/generator.js", "jaredly-xon/deps/lorem-ipsum/index.js");
+require.alias("knicklabs-lorem-ipsum.js/lib/generator.js", "knicklabs-lorem-ipsum.js/index.js");
 require.alias("jaredly-xon/index.js", "jaredly-xon/index.js");
 require.alias("jazzui-ace-slider/index.js", "jazzui/deps/ace-slider/index.js");
 require.alias("jazzui-ace-slider/index.js", "jazzui/deps/ace-slider/index.js");
