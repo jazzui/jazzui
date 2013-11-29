@@ -109,9 +109,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.375"
-     inkscape:cx="112.78684"
-     inkscape:cy="6.6980464"
+     inkscape:zoom="0.6875"
+     inkscape:cx="331.45269"
+     inkscape:cy="-184.62914"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:document-units="px"
@@ -267,7 +267,7 @@
        y="259.12122"
        id="text3816"
        sodipodi:linespacing="125%"
-       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name.png"
+       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name-full.png"
        inkscape:export-xdpi="78.523056"
        inkscape:export-ydpi="78.523056"><tspan
          style="fill:url(#linearGradient3838);fill-opacity:1"
@@ -280,7 +280,7 @@
        id="path3820"
        d="m 23.598519,212.34888 34.118132,55.81889 3.987063,-2.43701 -34.118131,-55.81889 c 0,0 -2.437009,-3.98706 1.550052,-6.42407 3.987063,-2.43701 6.424074,1.55006 6.424074,1.55006 l 3.987064,-2.43701 c 0,0 -4.874019,-7.97413 -12.848146,-3.10011 -7.974127,4.87402 -3.100108,12.84814 -3.100108,12.84814 z"
        style="fill:#ff6600;stroke:#d45500;stroke-width:1.86914694;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
-       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name.png"
+       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name-full.png"
        inkscape:export-xdpi="78.523056"
        inkscape:export-ydpi="78.523056" />
     <path
@@ -289,7 +289,7 @@
        id="path3822"
        d="m 15.482282,187.70664 63.888085,0 -14.197356,0 5.950412,-28.39471 -35.493378,0 -5.950412,28.39471 z"
        style="fill:url(#linearGradient3833);fill-opacity:1;stroke:#d45500;stroke-width:2.83899999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name.png"
+       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name-full.png"
        inkscape:export-xdpi="78.523056"
        inkscape:export-ydpi="78.523056" />
     <text
@@ -299,12 +299,26 @@
        y="270.37918"
        id="text3828"
        sodipodi:linespacing="125%"
-       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name.png"
+       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name-full.png"
        inkscape:export-xdpi="78.523056"
        inkscape:export-ydpi="78.523056"><tspan
          sodipodi:role="line"
          id="tspan3830"
          x="44.809948"
          y="270.37918">azzUI</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:32px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#666666;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold Oblique"
+       x="234.77055"
+       y="270.81165"
+       id="text3030"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/jared/clone/jazzui/jazzui/logo-name-full.png"
+       inkscape:export-xdpi="78.523056"
+       inkscape:export-ydpi="78.523056"><tspan
+         sodipodi:role="line"
+         id="tspan3032"
+         x="234.77055"
+         y="270.81165">Not your average prototypes</tspan></text>
   </g>
 </svg>

@@ -27,3 +27,4 @@ div#main(ng-controller="MainController")
         li(ng-repeat='person in people')
           img(ng-src="{{person.picture}}")
           span.name {{ person.name }}
+          div.description {{ person.description }}

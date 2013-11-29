@@ -8,11 +8,12 @@ module.exports = {
 function getData(cb) {
   cb(null, x({
     // Mess with the fixtures here
-    people: x.some(3, 10, {
+    people: x.some(10, {
       name: x.fullName(),
       age: x.randInt(21, 45),
       status: x.choice(['new', 'old', 'middling']),
-      picture: x.image(46, 46)
+      picture: x.image(46, 46),
+      description: x.lipsum({})
     })
   }), true)
 }
