@@ -1,6 +1,4 @@
-# Not your average prototypes
-
-![logo](/logo-name.png)
+![logo](/logo-name-full.png)
 
 ### Does your favorite mock-up tool output production ready code?
 **Of course not,** that would take way too much time / effort! That's why we make mockups, so we can iterate quickly...
