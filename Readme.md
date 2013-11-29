@@ -1,11 +1,13 @@
-![logo](/logo-name-full.png)
+[![logo](/logo-name-full.png)](http://jazzui.github.io/jazzui)
 
 ### Does your favorite mock-up tool output production ready code?
 **Of course not,** that would take way too much time / effort! That's why we make mockups, so we can iterate quickly...
 
 JazzUI makes it easier to get into the flexibility and precision of html/css while maintaining the quick iterative features of a traditional mockup tool. Plus more awesome.
 
-![Main screenshot](/docs/screenshot.png)
+[![Main screenshot](/docs/screenshot.png)](http://jazzui.github.io/jazzui)
+
+[play with it yourself](http://jazzui.github.io/jazzui). Files are saved to your browser's local storage.
 
 ## Where's the magic?
 
@@ -41,12 +43,12 @@ Ok, so I don't have real-time collaboration yet =) but if you host it yourself, 
 
 ## Things I want to implement
 
+- [node-webkit](https://github.com/rogerwang/node-webkit) support. I have it packaged up, but it doesn't yet use any of the v8 engine goodness. I need to think more about multi-file editing, angular directives, etc. Before I'm ready to think of JazzUI as a capable IDE for making fully-fledged apps. 
 - allow the creation of angular directives w/ templates
 - have multiple "templates" from which to start your prototype, that you can choose from on creation. Bootstrap has a few, and there could be more
 - highlight nodes; you ctrl-click somewhere in the jade file, and it is highlighted in the preview
 - "style this"; when editing the jade file, have some shortcut to take you right into less, styling that node. This would require a dropdown w/ choices of "what selector combination do you want". I think it would come in handy, though.
 - [firebase](https://www.firebase.com/) integration? That could get really cool really fast
-- edit files on your machine; that way you could export the prototype, start fleshing it out as a real app, but still jump back into JazzUI for new UI developments. Maybe using [node-webkit](https://github.com/rogerwang/node-webkit)
 
 ## Lower priority
 
